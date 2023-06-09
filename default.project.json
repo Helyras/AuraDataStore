@@ -7,9 +7,12 @@
           "$className": "ServerScriptService",
           "DataStore": {
               "$path": "src/DataStore.lua",
-              "module": {
-                "$path": "src/module.lua"
+              "Signal": {
+                "$path": "src/Signal.lua"
             }
+          },
+          "ExampleUse": {
+            "$path": "src/ExampleUse.server.lua"
           }
       }
   }
