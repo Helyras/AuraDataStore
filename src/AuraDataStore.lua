@@ -12,7 +12,7 @@ local Signal = require(script:WaitForChild("Signal"))
 local AuraDataStore = {
 	-- Settings
 	AutoSaveEnabled = true,
-	AutoSaveCooldown = 180,
+	AutoSaveInterval = 180,
 	DebugMessages = true,
 	SaveInStudio = true,
 	BindToCloseEnabled = true,
@@ -45,6 +45,8 @@ local function SendMessage(message)
 		warn(message)
 	end
 end
+
+
 
 local function PlayerRemoving()
 end
