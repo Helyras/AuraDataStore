@@ -2,12 +2,14 @@
 local DataStoreService = game:GetService("DataStoreService")
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Players = game:GetService("Players")
 
--- Signals
-local SuccessfullyLoadedSignal = Instance.new("BindableEvent")
-local ErrorOnLoadingDataSignal = Instance.new("BindableEvent")
+--// Modules
+local Promise = require(script:WaitForChild("Promise"))
+local Trove = require(script:WaitForChild("Trove"))
+local Signal = require(script:WaitForChild("Signal"))
 
-local LuckyDataStore = {
+local AuraDataStore = {
 	-- Settings
 	AutoSaveEnabled = true,
 	AutoSaveCooldown = 180,
@@ -15,8 +17,8 @@ local LuckyDataStore = {
 	SaveInStudio = true,
 	BindToCloseEnabled = true,
 	-- Events
-	SuccessfullyLoaded = SuccessfullyLoadedSignal.Event,
-	ErrorOnLoadingData = ErrorOnLoadingDataSignal.Event,
+	SuccessfullyLoaded = Signal.new(),
+	ErrorOnLoadingData = Signal.new(),
 }
 
 local function deepCopy(original)
@@ -39,7 +41,7 @@ local function WaitForRequestBudget()
 end
 
 local function SendMessage(message)
-	if LuckyDataStore.DebugMessages then
+	if AuraDataStore.DebugMessages then
 		warn(message)
 	end
 end
@@ -50,7 +52,7 @@ end
 local function BindToClose()
 end
 
-game.Players.PlayerRemoving:Connect(PlayerRemoving)
+Players.PlayerRemoving:Connect(PlayerRemoving)
 game:BindToClose(BindToClose)
 
-return LuckyDataStore
+return AuraDataStore
