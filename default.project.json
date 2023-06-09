@@ -3,17 +3,26 @@
   "tree": {
       "$className": "DataModel",
       
-      "ServerScriptService": {
-          "$className": "ServerScriptService",
-          "DataStore": {
-              "$path": "src/DataStore.lua",
+      "ServerStorage": {
+          "$className": "ServerStorage",
+          "AuraDataStore": {
+              "$path": "src/AuraDataStore.lua",
+              "Promise": {
+                "$path": "src/Promise.lua"
+              },
+              "Trove": {
+                "$path": "src/Trove.lua"
+              },
               "Signal": {
                 "$path": "src/Signal.lua"
-            }
-          },
-          "ExampleUse": {
-            "$path": "src/ExampleUse.server.lua"
+              }
           }
-      }
+      },
+      "ServerScriptService": {
+        "$className": "ServerScriptService",
+        "ExampleUse": {
+          "$path": "src/ExampleUse.server.lua"
+        }
+    }
   }
 }
