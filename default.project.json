@@ -1,0 +1,16 @@
+{
+  "name": "DataStoreModule",
+  "tree": {
+      "$className": "DataModel",
+      
+      "ServerScriptService": {
+          "$className": "ServerScriptService",
+          "DataStore": {
+              "$path": "src/DataStore.lua",
+              "module": {
+                "$path": "src/module.lua"
+            }
+          }
+      }
+  }
+}
