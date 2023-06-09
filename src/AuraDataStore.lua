@@ -14,12 +14,14 @@ local AuraDataStore = {
 	AutoSaveEnabled = true,
 	AutoSaveInterval = 180,
 	DebugMessages = true,
-	SaveInStudio = true,
+	SaveInStudio = false,
 	BindToCloseEnabled = true,
 	-- Events
 	SuccessfullyLoaded = Signal.new(),
 	ErrorOnLoadingData = Signal.new(),
 }
+
+local DataStores = {}
 
 local function deepCopy(original)
 	local copy = {}
@@ -46,7 +48,10 @@ local function SendMessage(message)
 	end
 end
 
-
+AuraDataStore.CreateStore = function(name, template)
+	DataStores[name] = { DataStoreService:GetDataStore(name), deepCopy(template) }
+	return DataStores[name][1]
+end
 
 local function PlayerRemoving()
 end
