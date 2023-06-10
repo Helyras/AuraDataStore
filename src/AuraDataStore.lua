@@ -148,7 +148,7 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 
 	if not AuraDataStore.SaveInStudio and RunService:IsStudio() then
 		if not forceSave then
-			warn(s_format("Did not saved data for key: '%s', name: '%s'. Reason:\n%s", key, self._name, "SaveInStudio is not enabled."))
+			warn(s_format("Did not saved data for key: '%s', name: '%s'. Reason: SaveInStudio is not enabled.", key, self._name))
 		end
 		return
 	end
