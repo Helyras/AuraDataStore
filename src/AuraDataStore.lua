@@ -115,7 +115,7 @@ function DataStore:GetAsync(key, _retries)
 			if keyInfo:GetMetadata().SessionLock then
 				local secondsPassed = os.time() - keyInfo:GetMetadata().SessionLock
 				if secondsPassed < AuraDataStore.SessionLockTime then
-					AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', after %s retries. Reason: Data is session locked, try again in %d seconds. (%s~ minutes)", key, self._name, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed), key, self._name, nil, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed, math.floor((AuraDataStore.SessionLockTime - secondsPassed)/60))
+					AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', after %s retries. Reason: Data is session locked, try again in %d seconds. (%s~ minutes)", key, self._name, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed, math.floor((AuraDataStore.SessionLockTime - secondsPassed)/60)), key, self._name, nil, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed)
 					return nil, s_format("\nData is session locked, try again in %d seconds.\n(%s~ minutes)", AuraDataStore.SessionLockTime - secondsPassed, math.floor((AuraDataStore.SessionLockTime - secondsPassed)/60))
 				end
 			end
