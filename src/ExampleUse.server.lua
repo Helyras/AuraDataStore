@@ -1,6 +1,5 @@
 local ServerStorage = game:GetService("ServerStorage")
 
-
 local AuraDataStore = require(ServerStorage:WaitForChild("AuraDataStore"))
 
 local AuraTemplate = {
@@ -18,8 +17,12 @@ local AuraTemplate = {
 local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", AuraTemplate)
 
 game.Players.PlayerAdded:Connect(function(player)
-    local data = PlayerDataStore:GetAsync(player.UserId)
-    PlayerDataStore:Reconcile(player.UserId)
+
+    local key = player.UserId
+
+    local data = PlayerDataStore:GetAsync(key)
+    PlayerDataStore:Reconcile(key)
     task.wait(2)
-    PlayerDataStore:Save(player.UserId)
+    PlayerDataStore:Save(key, {player.UserId})
+    data.Cash = 0
 end)

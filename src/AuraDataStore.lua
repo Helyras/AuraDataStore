@@ -4,7 +4,6 @@ local RunService = game:GetService("RunService")
 
 --// Modules
 local Promise = require(script:WaitForChild("Promise"))
-local Trove = require(script:WaitForChild("Trove"))
 local Signal = require(script:WaitForChild("Signal"))
 
 local AuraDataStore = {
@@ -23,8 +22,6 @@ if not RunService:IsServer() then
 	error("must be on server")
 end
 
-local Database = {}
-local Cache = {}
 local Stores = {}
 
 local DataStore = {}
@@ -86,78 +83,66 @@ end
 AuraDataStore.CreateStore = function(name, template)
 	local store = setmetatable({
 		_store = DataStoreService:GetDataStore(name),
-		_template = deepCopy(template)
+		_template = deepCopy(template),
+		_Database = {},
+		_Cache = {}
 	}, DataStore)
-	Stores[store] = {}
+	table.insert(Stores, store)
 	return store
 end
 
-AuraDataStore.FindDatabyKey = function(key)
-	return Database[key]
-end
-
 function DataStore:Reconcile(key)
-	for k, v in pairs(self._template) do
-        if type(k) == "string" then
-            if Database[key][k] == nil then
-                if type(v) == "table" then
-                    Database[key][k] = deepCopy(v)
-                else
-                    Database[key][k] = v
-                end
-            elseif type(Database[key][k]) == "table" and type(v) == "table" then
-                Reconcile(Database[key][k], v)
-            end
-        end
-    end
+	if self._Database[key] then
+		Reconcile(self._Database[key], self._template)
+	end
 end
 
 function DataStore:GetAsync(key)
-
-	if not table.find(Stores[self], key) then
-		table.insert(Stores[self], key)
-	end
 
 	local success, response = pcall(self._store.GetAsync, self._store, key)
 	if success then
 
 		if response then
-			Database[key] = response
-			Cache[key] = deepCopy(response)
+			self._Database[key] = response
+			self._Cache[key] = deepCopy(response)
 		else
-			Database[key] = deepCopy(self._template)
-			Cache[key] = deepCopy(self._template)
+			self._Database[key] = deepCopy(self._template)
+			self._Cache[key] = deepCopy(self._template)
 		end
 
-		return Database[key]
+		return self._Database[key]
 	else
-		return response
+		return self:GetAsync(key)
 	end
 end
 
-function DataStore:Save(key, _isLeaving)
+function DataStore:Save(key, tblofIDs, isLeaving)
 
-	if CheckTableEquality(Database[key], Cache[key]) then
+	if CheckTableEquality(self._Database[key], self._Cache[key]) then
 		SendMessage("Data not saving, identical")
 		return true
 	end
 
+	if not tblofIDs then
+		tblofIDs = {}
+	end
+
 	Promise.new(function(resolve, reject)
-		local success, response = pcall(self._store.SetAsync, self._store, key, Database[key])
+		local success, response = pcall(self._store.SetAsync, self._store, key, self._Database[key], tblofIDs)
 		if success then
 			resolve(response)
 		else
 			reject(response)
-			self:Save(key)
+			self:Save(key, tblofIDs)
 		end
 	end)
 	:andThen(function()
-		SendMessage("saved")
-		if _isLeaving then
-			Database[key] = nil
-			Cache[key] = nil
+		SendMessage("Saved successfully")
+		if isLeaving then
+			self._Database[key] = nil
+			self._Cache[key] = nil
 		else
-			Cache[key] = deepCopy(Database[key])
+			self._Cache[key] = deepCopy(self._Database[key])
 		end
 	end)
 	:catch(function(err)
@@ -167,12 +152,13 @@ end
 
 local function BindToClose()
 	if AuraDataStore.BindToCloseEnabled then
-		for self, keys in pairs(Stores) do
-			for _, key in pairs(keys) do
-				self:Save(key)
+		for _, self in pairs(Stores) do
+			for i, _ in pairs(self._Database) do
+				self:Save(i)
 			end
 		end
 	end
+	task.wait(20)
 end
 
 game:BindToClose(BindToClose)
