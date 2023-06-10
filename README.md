@@ -1,5 +1,3 @@
-Session Locking -- done
-
-dont save if data hasnt changed -- done
-
-easy and simple interface -- done
+Session Locking
+Do not save data if it didn't changed
+Easy to use
