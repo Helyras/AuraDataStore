@@ -7,3 +7,12 @@ local AuraTemplate = {
 }
 
 local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", AuraTemplate)
+
+game.Players.PlayerAdded:Connect(function(player)
+    local data = PlayerDataStore:GetAsync(player.UserId)
+    data.Cash = 5
+
+    task.wait(5)
+
+    PlayerDataStore:Save(player.UserId)
+end)

@@ -1,8 +1,6 @@
 --// Services
 local DataStoreService = game:GetService("DataStoreService")
 local RunService = game:GetService("RunService")
-local ServerScriptService = game:GetService("ServerScriptService")
-local Players = game:GetService("Players")
 
 --// Modules
 local Promise = require(script:WaitForChild("Promise"))
@@ -21,7 +19,34 @@ local AuraDataStore = {
 	ErrorOnLoadingData = Signal.new(),
 }
 
-local DataStores = {}
+local Database = {}
+local Cache = {}
+
+local Stores = {}
+
+local DataStore = {}
+DataStore.__index = DataStore
+
+--// Local Functions
+local function CheckTableEquality(t1, t2)
+    for i,v in next, t1 do
+        if typeof(v) == "table" then
+            return CheckTableEquality(t2[i], v)
+        end
+		if t2[i] ~= v then
+			return false
+		end 
+	end
+    for i,v in next, t2 do
+        if typeof(v) == "table" then
+            return CheckTableEquality(t1[i], v)
+        end
+		if t1[i] ~= v then
+			return false
+		end
+	end
+    return true
+end
 
 local function deepCopy(original)
 	local copy = {}
@@ -48,18 +73,82 @@ local function SendMessage(message)
 	end
 end
 
+--// Data Store Functions
 AuraDataStore.CreateStore = function(name, template)
-	DataStores[name] = { DataStoreService:GetDataStore(name), deepCopy(template) }
-	return DataStores[name][1]
+	local store = setmetatable({
+		_store = DataStoreService:GetDataStore(name),
+		_template = deepCopy(template)
+	}, DataStore)
+	Stores[store] = {}
+	return store
 end
 
-local function PlayerRemoving()
+function DataStore:GetAsync(key)
+
+	if not table.find(Stores[self], key) then
+		table.insert(Stores[self], key)
+	end
+
+	local success, response = pcall(self._store.GetAsync, self._store, key)
+	if success then
+
+		if response then
+			Database[key] = response
+			Cache[key] = deepCopy(response)
+		else
+			Database[key] = deepCopy(self._template)
+			Cache[key] = deepCopy(self._template)
+		end
+
+		return Database[key]
+	else
+		return response
+	end
+end
+
+function DataStore:Save(key, _isLeaving)
+
+	if CheckTableEquality(Database[key], self._template) then
+		SendMessage("Data is equal to template")
+		return true
+	end
+
+	if CheckTableEquality(Database[key], Cache[key]) then
+		SendMessage("Data not saving, identical")
+		return true
+	end
+
+	Promise.new(function(resolve, reject)
+		local success, response = pcall(self._store.SetAsync, self._store, key, Database[key])
+		if success then
+			resolve(response)
+		else
+			reject(response)
+			self:Save(key)
+		end
+	end)
+	:andThen(function()
+		Cache[key] = deepCopy(Database[key])
+	end)
+	:catch(function(err)
+		warn(err)
+	end)
+
+	if _isLeaving then
+		Database[key] = nil
+		Cache[key] = nil
+	end
 end
 
 local function BindToClose()
+	if AuraDataStore.BindToCloseEnabled then
+		for self, keys in pairs(Stores) do
+			for _, key in pairs(keys) do
+				self:Save(key)
+			end
+		end
+	end
 end
 
-Players.PlayerRemoving:Connect(PlayerRemoving)
 game:BindToClose(BindToClose)
-
 return AuraDataStore
