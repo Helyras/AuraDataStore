@@ -28,7 +28,7 @@ end)
 
 Players.PlayerRemoving:Connect(function(player)
     local key = player.UserId
-    PlayerDataStore:Save(key, {player.UserId}, true, true)
+    PlayerDataStore:Save(key, {player.UserId}, true)
 end)
 
 AuraDataStore.DataStatus:Connect(function(status)

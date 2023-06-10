@@ -11,7 +11,7 @@ local AuraDataStore = {
 	SaveInStudio = false,
 	BindToCloseEnabled = true,
 	RetryCount = 5,
-	SessionLockTime = 30,
+	SessionLockTime = 1800,
 	--// Events
 	DataStatus = Signal.new(),
 }
@@ -20,7 +20,7 @@ local AuraDataStore = {
 local s_format = string.format
 
 if not RunService:IsServer() then
-	error("must be on server")
+	error("AuraDataStore must ran on server.")
 end
 
 local Stores = {}
@@ -165,7 +165,7 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 		return false
 	end
 
-	if not forceSave then
+	if not forceSave and not isLeaving then
 		if CheckTableEquality(self._database[key], self._cache[key]) then
 			AuraDataStore.DataStatus:Fire(s_format("Data is not saved for key: '%s', name: '%s'. Reason: Data is identical.", key, self._name))
 			return true
@@ -182,7 +182,7 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 		if not isLeaving then
 			setOptions:SetMetadata({["SessionLock"] = tick()})
 		else
-			setOptions:SetMetadata({["SessionLock"] = nil})
+			setOptions:SetMetadata({})
 		end
 
 		local success, response = pcall(self._store.SetAsync, self._store, key, self._database[key], tblofIDs, setOptions)
