@@ -113,9 +113,10 @@ function DataStore:GetAsync(key, _retries)
 	if success then
 		if response then
 			if keyInfo:GetMetadata().SessionLock then
-				if tick() - keyInfo:GetMetadata().SessionLock < AuraDataStore.SessionLockTime then
-					AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', after %s retries. Data is session locked, try again in %d seconds.", key, self._name, _retries + 1, AuraDataStore.SessionLockTime - (tick() - keyInfo:GetMetadata().SessionLock)), key, self._name, nil, _retries + 1, AuraDataStore.SessionLockTime - (tick() - keyInfo:GetMetadata().SessionLock))
-					return nil, s_format("Data is session locked, try again in %d seconds.", AuraDataStore.SessionLockTime - (tick() - keyInfo:GetMetadata().SessionLock))
+				local secondsPassed = os.time() - keyInfo:GetMetadata().SessionLock
+				if secondsPassed < AuraDataStore.SessionLockTime then
+					AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', after %s retries. Reason: Data is session locked, try again in %d seconds. (%s~ minutes)", key, self._name, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed), key, self._name, nil, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed, math.floor((AuraDataStore.SessionLockTime - secondsPassed)/60))
+					return nil, s_format("\nData is session locked, try again in %d seconds.\n(%s~ minutes)", AuraDataStore.SessionLockTime - secondsPassed, math.floor((AuraDataStore.SessionLockTime - secondsPassed)/60))
 				end
 			end
 			self._database[key] = response
@@ -180,7 +181,7 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 
 		local setOptions = Instance.new("DataStoreSetOptions")
 		if not isLeaving then
-			setOptions:SetMetadata({["SessionLock"] = tick()})
+			setOptions:SetMetadata({["SessionLock"] = os.time()})
 		else
 			setOptions:SetMetadata({})
 		end

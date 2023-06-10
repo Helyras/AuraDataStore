@@ -15,6 +15,7 @@ Players.PlayerAdded:Connect(function(player)
     local data, reason = PlayerDataStore:GetAsync(key)
     if not data then
         player:Kick(reason)
+        return
     end
     PlayerDataStore:Reconcile(key)
 
