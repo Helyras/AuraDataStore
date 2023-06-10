@@ -8,20 +8,23 @@ local Trove = require(script:WaitForChild("Trove"))
 local Signal = require(script:WaitForChild("Signal"))
 
 local AuraDataStore = {
-	-- Settings
+	--// Settings
 	AutoSaveEnabled = true,
 	AutoSaveInterval = 180,
 	DebugMessages = true,
 	SaveInStudio = false,
 	BindToCloseEnabled = true,
-	-- Events
+	--// Events
 	SuccessfullyLoaded = Signal.new(),
 	ErrorOnLoadingData = Signal.new(),
 }
 
+if not RunService:IsServer() then
+	error("must be on server")
+end
+
 local Database = {}
 local Cache = {}
-
 local Stores = {}
 
 local DataStore = {}
@@ -29,23 +32,21 @@ DataStore.__index = DataStore
 
 --// Local Functions
 local function CheckTableEquality(t1, t2)
-    for i,v in next, t1 do
-        if typeof(v) == "table" then
-            return CheckTableEquality(t2[i], v)
-        end
-		if t2[i] ~= v then
-			return false
-		end 
-	end
-    for i,v in next, t2 do
-        if typeof(v) == "table" then
-            return CheckTableEquality(t1[i], v)
-        end
-		if t1[i] ~= v then
-			return false
+	local function subset(a, b)
+		for key, value in pairs(a) do
+			if typeof(value) == "table" then
+				if not CheckTableEquality(b[key], value) then
+					return false
+				end
+			else
+				if b[key] ~= value then
+					return false
+				end
+			end
 		end
+		return true
 	end
-    return true
+	return subset(t1, t2) and subset(t2, t1)
 end
 
 local function deepCopy(original)
@@ -59,12 +60,20 @@ local function deepCopy(original)
 	return copy
 end
 
-local function WaitForRequestBudget()
-	local currentBudget = DataStoreService:GetRequestBudgetForRequestType(Enum.DataStoreRequestType.UpdateAsync)
-	while currentBudget < 1 do
-		currentBudget = DataStoreService:GetRequestBudgetForRequestType(Enum.DataStoreRequestType.UpdateAsync)
-		task.wait(5)
-	end
+local function Reconcile(tbl, template)
+    for k, v in pairs(template) do
+        if type(k) == "string" then
+            if tbl[k] == nil then
+                if type(v) == "table" then
+                    tbl[k] = deepCopy(v)
+                else
+                    tbl[k] = v
+                end
+            elseif type(tbl[k]) == "table" and type(v) == "table" then
+                Reconcile(tbl[k], v)
+            end
+        end
+    end
 end
 
 local function SendMessage(message)
@@ -81,6 +90,26 @@ AuraDataStore.CreateStore = function(name, template)
 	}, DataStore)
 	Stores[store] = {}
 	return store
+end
+
+AuraDataStore.FindDatabyKey = function(key)
+	return Database[key]
+end
+
+function DataStore:Reconcile(key)
+	for k, v in pairs(self._template) do
+        if type(k) == "string" then
+            if Database[key][k] == nil then
+                if type(v) == "table" then
+                    Database[key][k] = deepCopy(v)
+                else
+                    Database[key][k] = v
+                end
+            elseif type(Database[key][k]) == "table" and type(v) == "table" then
+                Reconcile(Database[key][k], v)
+            end
+        end
+    end
 end
 
 function DataStore:GetAsync(key)
@@ -108,11 +137,6 @@ end
 
 function DataStore:Save(key, _isLeaving)
 
-	if CheckTableEquality(Database[key], self._template) then
-		SendMessage("Data is equal to template")
-		return true
-	end
-
 	if CheckTableEquality(Database[key], Cache[key]) then
 		SendMessage("Data not saving, identical")
 		return true
@@ -128,16 +152,17 @@ function DataStore:Save(key, _isLeaving)
 		end
 	end)
 	:andThen(function()
-		Cache[key] = deepCopy(Database[key])
+		SendMessage("saved")
+		if _isLeaving then
+			Database[key] = nil
+			Cache[key] = nil
+		else
+			Cache[key] = deepCopy(Database[key])
+		end
 	end)
 	:catch(function(err)
 		warn(err)
 	end)
-
-	if _isLeaving then
-		Database[key] = nil
-		Cache[key] = nil
-	end
 end
 
 local function BindToClose()
