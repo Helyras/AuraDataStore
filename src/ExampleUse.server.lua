@@ -6,14 +6,6 @@ AuraDataStore.SaveInStudio = true
 
 local AuraTemplate = {
     Cash = 0,
-    Test = 70,
-    Tbl = {},
-    TblWithData = {
-        Test = 5,
-        Tbl = {
-            qwe = 12
-        }
-    }
 }
 
 local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", AuraTemplate)
@@ -25,6 +17,20 @@ Players.PlayerAdded:Connect(function(player)
         player:Kick(reason)
     end
     PlayerDataStore:Reconcile(key)
+
+    local folder = Instance.new("Folder")
+    folder.Name = "leaderstats"
+
+    local cash = Instance.new("IntValue")
+    cash.Name = "Cash"
+    cash.Parent = folder
+
+    folder.Parent = player
+
+    cash.Value = data.Cash
+    cash.Changed:Connect(function()
+        data.Cash = cash.Value
+    end)
 end)
 
 Players.PlayerRemoving:Connect(function(player)
