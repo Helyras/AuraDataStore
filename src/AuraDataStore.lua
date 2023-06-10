@@ -8,7 +8,6 @@ local Signal = require(script:WaitForChild("Signal"))
 
 local AuraDataStore = {
 	--// Settings
-	DebugMessages = true,
 	SaveInStudio = false,
 	BindToCloseEnabled = true,
 	RetryCount = 5,
@@ -84,12 +83,6 @@ local function Reconcile(tbl, template)
 		end
 	else
 		warn("Cannot reconcile")
-	end
-end
-
-local function SendMessage(message)
-	if AuraDataStore.DebugMessages then
-		warn(message)
 	end
 end
 
