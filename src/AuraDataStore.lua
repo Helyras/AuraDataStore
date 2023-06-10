@@ -178,12 +178,11 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 
 	Promise.new(function(resolve, reject)
 
-		local setOptions = nil
+		local setOptions = Instance.new("DataStoreSetOptions")
 		if not isLeaving then
-			setOptions = Instance.new("DataStoreSetOptions")
-			setOptions:SetMetadata({
-				["SessionLock"] = tick()
-			})
+			setOptions:SetMetadata({["SessionLock"] = tick()})
+		else
+			setOptions:SetMetadata({["SessionLock"] = nil})
 		end
 
 		local success, response = pcall(self._store.SetAsync, self._store, key, self._database[key], tblofIDs, setOptions)
@@ -195,7 +194,7 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 		end
 	end)
 	:andThen(function()
-		if not forceSave then
+		if not forceSave or (isLeaving and forceSave) then
 			AuraDataStore.DataStatus:Fire(s_format("Saving data succeed for key: '%s', name: '%s'.", key, self._name))
 		end
 		if isLeaving then
