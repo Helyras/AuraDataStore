@@ -147,7 +147,9 @@ end
 function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 
 	if not AuraDataStore.SaveInStudio and RunService:IsStudio() then
-		warn(s_format("Did not saved data for key: '%s', name: '%s'. Reason:\n%s", key, self._name, "SaveInStudio is not enabled."), key, self._name, "SaveInStudio is not enabled.")
+		if not forceSave then
+			warn(s_format("Did not saved data for key: '%s', name: '%s'. Reason:\n%s", key, self._name, "SaveInStudio is not enabled."))
+		end
 		return
 	end
 
@@ -158,7 +160,7 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 
 	if self._database[key]["DontSave"] then
 		if not forceSave then
-			warn(s_format("Saving data failed for key: '%s', name: '%s'. Reason:\n%s", key, self._name, self._database[key]["DontSave"]), key, self._name, self._database[key]["DontSave"])
+			warn(s_format("Saving data failed for key: '%s', name: '%s'. Reason:\n%s", key, self._name, self._database[key]["DontSave"]))
 		end
 		return
 	end
@@ -202,9 +204,6 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 		else
 			self._cache[key] = deepCopy(self._database[key])
 		end
-	end)
-	:catch(function(err)
-		warn(err)
 	end)
 end
 

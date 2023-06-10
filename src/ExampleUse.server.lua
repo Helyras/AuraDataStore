@@ -2,6 +2,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local Players = game:GetService("Players")
 
 local AuraDataStore = require(ServerStorage:WaitForChild("AuraDataStore"))
+AuraDataStore.SaveInStudio = true
 
 local AuraTemplate = {
     Cash = 0,
@@ -24,12 +25,11 @@ Players.PlayerAdded:Connect(function(player)
         player:Kick(reason)
     end
     PlayerDataStore:Reconcile(key)
-    PlayerDataStore:Save(key, {key})
 end)
 
 Players.PlayerRemoving:Connect(function(player)
     local key = player.UserId
-    PlayerDataStore:Save(key, {player.UserId}, true)
+    PlayerDataStore:Save(key, {key}, true)
 end)
 
 AuraDataStore.DataStatus:Connect(function(info, key, name, response, retries, sessionLockCooldown)
