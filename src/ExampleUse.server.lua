@@ -24,6 +24,7 @@ Players.PlayerAdded:Connect(function(player)
         player:Kick(reason)
     end
     PlayerDataStore:Reconcile(key)
+    PlayerDataStore:Save(key, {key})
 end)
 
 Players.PlayerRemoving:Connect(function(player)
