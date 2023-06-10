@@ -46,8 +46,6 @@ local function CheckTableEquality(t1, t2)
 			return true
 		end
 		return subset(t1, t2) and subset(t2, t1)
-	else
-		warn("Cannot CheckTableEquality")
 	end
 end
 
@@ -61,8 +59,6 @@ local function deepCopy(original)
 			copy[k] = v
 		end
 		return copy
-	else
-		warn("Cannot deepCopy")
 	end
 end
 
@@ -81,8 +77,6 @@ local function Reconcile(tbl, template)
 				end
 			end
 		end
-	else
-		warn("Cannot reconcile")
 	end
 end
 
@@ -116,12 +110,11 @@ function DataStore:GetAsync(key, _retries)
 	end
 
 	local success, response, keyInfo = pcall(self._store.GetAsync, self._store, key)
-
 	if success then
 		if response then
 			if keyInfo:GetMetadata().SessionLock then
 				if tick() - keyInfo:GetMetadata().SessionLock < AuraDataStore.SessionLockTime then
-					AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', after %s retries. Data is session locked, try again in %d seconds.", key, self._name, _retries + 1, AuraDataStore.SessionLockTime - (tick() - keyInfo:GetMetadata().SessionLock)))
+					AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', after %s retries. Data is session locked, try again in %d seconds.", key, self._name, _retries + 1, AuraDataStore.SessionLockTime - (tick() - keyInfo:GetMetadata().SessionLock)), key, self._name, nil, _retries + 1, AuraDataStore.SessionLockTime - (tick() - keyInfo:GetMetadata().SessionLock))
 					return nil, s_format("Data is session locked, try again in %d seconds.", AuraDataStore.SessionLockTime - (tick() - keyInfo:GetMetadata().SessionLock))
 				end
 			end
@@ -132,16 +125,16 @@ function DataStore:GetAsync(key, _retries)
 			self._cache[key] = deepCopy(self._template)
 		end
 
-		AuraDataStore.DataStatus:Fire(s_format("Loading data succeed for key: '%s', name: '%s', after %s retries.", key, self._name, _retries + 1))
+		AuraDataStore.DataStatus:Fire(s_format("Loading data succeed for key: '%s', name: '%s', after %s retries.", key, self._name, _retries + 1), key, self._name, nil, _retries + 1)
 		self:Save(key, nil, nil, true)
 		return self._database[key]
 	else
 		_retries += 1
 		if _retries < AuraDataStore.RetryCount then
-			AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', retrying. Retries: %s", key, self._name, _retries), key, self._name, _retries)
+			AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', retrying. Retries: %s", key, self._name, _retries), key, self._name, nil, _retries)
 			return self:GetAsync(key, _retries)
 		else
-			AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s' after %s retries. Reason:\n%s", key, self._name, _retries, response), key, self._name, _retries, response)
+			AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s' after %s retries. Reason:\n%s", key, self._name, _retries, response), key, self._name, response, _retries)
 			self._database[key] = deepCopy(self._template)
 			self._cache[key] = deepCopy(self._template)
 			self._database[key]["DontSave"] = response
@@ -153,22 +146,27 @@ end
 
 function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 
+	if not AuraDataStore.SaveInStudio and RunService:IsStudio() then
+		warn(s_format("Did not saved data for key: '%s', name: '%s'. Reason:\n%s", key, self._name, "SaveInStudio is not enabled."), key, self._name, "SaveInStudio is not enabled.")
+		return
+	end
+
 	if not self._database[key] then
-		warn(s_format("Saving data failed for key: '%s', name: '%s'. Reason: Data was session locked and did not loaded.", key, self._name))
+		AuraDataStore.DataStatus:Fire(s_format("Saving data failed for key: '%s', name: '%s'. Reason: Data was session locked and did not loaded.", key, self._name), key, self._name)
 		return
 	end
 
 	if self._database[key]["DontSave"] then
 		if not forceSave then
-			warn(s_format("Saving data failed for key: '%s', name: '%s'. Reason:\n%s", key, self._name, self._database[key]["DontSave"]))
+			warn(s_format("Saving data failed for key: '%s', name: '%s'. Reason:\n%s", key, self._name, self._database[key]["DontSave"]), key, self._name, self._database[key]["DontSave"])
 		end
-		return false
+		return
 	end
 
 	if not forceSave and not isLeaving then
 		if CheckTableEquality(self._database[key], self._cache[key]) then
-			AuraDataStore.DataStatus:Fire(s_format("Data is not saved for key: '%s', name: '%s'. Reason: Data is identical.", key, self._name))
-			return true
+			AuraDataStore.DataStatus:Fire(s_format("Data is not saved for key: '%s', name: '%s'. Reason: Data is identical.", key, self._name), key, self._name)
+			return
 		end
 	end
 
@@ -190,12 +188,13 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 			resolve(response)
 		else
 			reject(response)
+			AuraDataStore.DataStatus:Fire(s_format("Saving data failed for key: '%s', name: '%s'. Reason:\n%s", key, self._name, response), key, self._name, response)
 			self:Save(key, tblofIDs)
 		end
 	end)
 	:andThen(function()
 		if not forceSave or (isLeaving and forceSave) then
-			AuraDataStore.DataStatus:Fire(s_format("Saving data succeed for key: '%s', name: '%s'.", key, self._name))
+			AuraDataStore.DataStatus:Fire(s_format("Saving data succeed for key: '%s', name: '%s'.", key, self._name), key, self._name)
 		end
 		if isLeaving then
 			self._database[key] = nil

@@ -32,6 +32,6 @@ Players.PlayerRemoving:Connect(function(player)
     PlayerDataStore:Save(key, {player.UserId}, true)
 end)
 
-AuraDataStore.DataStatus:Connect(function(status)
-    warn(status)
+AuraDataStore.DataStatus:Connect(function(info, key, name, response, retries, sessionLockCooldown)
+    warn(info)
 end)
