@@ -175,6 +175,7 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 
 	if not tblofIDs then
 		tblofIDs = {}
+		warn(s_format("Table of UserIds is not provided for key: '%s', name: '%s'. For GDPR compliance please refer to documentation.", key, self._name))
 	end
 
 	Promise.new(function(resolve, reject)
