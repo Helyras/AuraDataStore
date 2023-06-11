@@ -38,22 +38,6 @@ AuraDataStore.SessionLockTime = 1800 (default, 30 minutes)
 
 How much time data is locked if there is another session. When other session ends, this time gate will be removed. This disables the ability to load the data in different servers.
 
-- ## Debugging
-
-```lua
-(Signal) AuraDataStore.DataStatus
-```
-
-Returns signal object.
-
-```lua
-AuraDataStore.DataStatus:Connect(function(info, key, name, response, retries, sessionLockCooldown)
-    warn(info)
-end)
-```
-
-Can be used for debugging to make sure everything is working as how it is supposed to be. ```info```, ```key``` and ```name``` will always exist.
-
 # Functions
 
 - ## AuraDataStore.CreateStore
@@ -98,6 +82,7 @@ end)
 - ## Store_object:Reconcile
 
 ```lua
+local key = "Player_" .. player.UserId
 PlayerDataStore:Reconcile(key)
 ```
 
@@ -107,6 +92,7 @@ Example: A player was playing your game before and only had the value "Cash". In
 
 - ## Store_object:FindDatabyKey
 ```lua
+local key = "Player_" .. player.UserId
 local data = PlayerDataStore:FindDatabyKey(key)
 ```
 Will return the data inside of store object associated with the key if it exists.
@@ -115,11 +101,98 @@ Will return the data inside of store object associated with the key if it exists
 - ## Store_object:Save
 
 ```lua
+local key = "Player_" .. player.UserId
 PlayerDataStore:Save(key, tblofIDs, isLeaving)
 ```
 
 Returns *void*. Will *NOT* yield the script.
 
-For general saving, it should be used as ```lua
+For general saving, it must be used as:
+
+```lua
+local key = "Player_" .. player.UserId
+local tblofIDs = {player.UserId}
 PlayerDataStore:Save(key, tblofIDs)
 ```
+
+When used inside the ```PlayerRemoving``` it must be used as:
+
+```lua
+local key = "Player_" .. player.UserId
+local tblofIDs = {player.UserId}
+PlayerDataStore:Save(key, tblofIDs, true)
+```
+
+Third paramater is necessary when player leaves as it indicates that. It will unlock the session for it to be load later on.
+
+```tblofIDs``` is *not* necessary (for now) and can be blank (```nil```). It is advised to be used for GDPR compliance.
+
+- # Debugging
+
+```lua
+(Signal) AuraDataStore.DataStatus
+```
+
+Returns signal object.
+
+```lua
+AuraDataStore.DataStatus:Connect(function(info, key, name, response, retries, sessionLockCooldown)
+    warn(info)
+end)
+```
+
+Can be used for debugging to make sure everything is working as how it is supposed to be. ```info```, ```key``` and ```name``` will always exist.
+
+- # Example Use
+
+```lua
+local ServerStorage = game:GetService("ServerStorage")
+local Players = game:GetService("Players")
+
+local AuraDataStore = require(ServerStorage:WaitForChild("AuraDataStore"))
+AuraDataStore.SaveInStudio = true
+
+local AuraTemplate = {
+    Cash = 0
+}
+
+local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", AuraTemplate)
+
+Players.PlayerAdded:Connect(function(player)
+    local key = player.UserId
+
+    local data, reason = PlayerDataStore:GetAsync(key)
+    
+    if not data then
+        player:Kick(reason)
+        return
+    end
+
+    PlayerDataStore:Reconcile(key) -- optional
+
+    local folder = Instance.new("Folder")
+    folder.Name = "leaderstats"
+
+    local cash = Instance.new("IntValue")
+    cash.Name = "Cash"
+    cash.Parent = folder
+
+    cash.Value = data.Cash
+    cash.Changed:Connect(function()
+        data.Cash = cash.Value
+    end)
+
+    folder.Parent = player
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    local key = player.UserId
+    PlayerDataStore:Save(key, {key}, true)
+end)
+
+AuraDataStore.DataStatus:Connect(function(info, key, name, response, retries, sessionLockCooldown)
+    warn(info)
+end)
+```
+#
+***This module is still work in progress, bugs may occur. If you encounter any bugs or errors please let me know. This is not the final result and everything is up to change.***

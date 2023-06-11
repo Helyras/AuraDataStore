@@ -5,7 +5,7 @@ local AuraDataStore = require(ServerStorage:WaitForChild("AuraDataStore"))
 AuraDataStore.SaveInStudio = true
 
 local AuraTemplate = {
-    Cash = 0,
+    Cash = 0
 }
 
 local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", AuraTemplate)
