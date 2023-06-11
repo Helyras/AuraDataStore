@@ -84,7 +84,7 @@ end)
 
 ```Store_object:GetAsync``` returns one value only, data or reason. If data exists everything is fine, if not then data will be ```nil``` and ```reason``` will exist. Player should be kicked because this can only happen if their data is session locked. Hence their data is already loaded somewhere else and it is not loaded.
 
-```Store_object:GetAsync``` must be ran once when player has joined the server. If you want to access their data table from another scope or another script, refer to ```Store_object:FindDatabyKey```.
+```Store_object:GetAsync``` must be ran once when player has joined the server. If you want to access their data table from another scope or another script, refer to [```Store_object:FindDatabyKey```](https://github.com/Zepherria/AuraDataStore#store_objectfinddatabykey).
 
 - ## Store_object:Reconcile
 
