@@ -31,13 +31,13 @@ Enables or disables studio saving. Default is false.
 AuraDataStore.BindToCloseEnabled = true -- (default, highly recommended)
 ```
 
-Enables or disables game:BindToClose() function, which is necessary for saving data before shutting down server. If you are not going to write one yourself, keep this enabled. Automatically disabled in studio to not cause data store queue to fill up.
+Enables or disables ```game:BindToClose()``` function, which is necessary for saving data before shutting down server. If you are not going to write one yourself, keep this enabled. Automatically disabled in studio to not cause data store queue to fill up.
 
 ```lua
 AuraDataStore.RetryCount = 5 -- (default)
 ```
 
-This is how many times module will try to load data before giving up. If data cannot be loaded for some reason it will be provided as a warning. Refer to :GetAsync() for more information.
+This is how many times module will try to load data before giving up. If data cannot be loaded for some reason it will be provided as a warning. Refer to [```Store_object:GetAsync```](https://github.com/Zepherria/AuraDataStore#store_objectgetasync) for more information.
 
 ```lua
 AuraDataStore.SessionLockTime = 1800 -- (default, 30 minutes)
@@ -59,7 +59,7 @@ local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", Template)
 
 Returns Store object. This is where data is going to be saved. First paramater is the name of the data store, second paramater is the template for the data.
 
-- ## Store_object:GetAsync
+- ## ```Store_object:GetAsync```
 
 ```lua
 local Template = {
