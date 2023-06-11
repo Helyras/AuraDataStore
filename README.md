@@ -89,7 +89,34 @@ game.Players.PlayerAdded:Connect(function(player)
 end)
 ```
 
-```key``` is the key in the data store named ```"PlayerDataStore"```. Data will be loaded and saved from this key in this data store.
+```key``` is the key in the data store named ```"PlayerDataStore"```. Data will be loaded and saved from this key in this data store. Will yield the script.
 
 ```Store_object:GetAsync``` returns one value only, data or reason. If data exists everything is fine, if not then data will be ```nil``` and ```reason``` will exist. Player should be kicked because this can only happen if their data is session locked. Hence their data is already loaded somewhere else and it is not loaded.
+
+```Store_object:GetAsync``` must be ran once when player has joined the server. If you want to access their data table from another scope or another script, refer to ```Store_object:FindDatabyKey```.
+
+- ## Store_object:Reconcile
+
+```lua
+PlayerDataStore:Reconcile(key)
+```
+
+Returns *void*. It's purpose is to fill out missing values for the existing datas and completely optional.
+
+Example: A player was playing your game before and only had the value "Cash". In the next update, you added "Biscuits" to the game and to the template. This function will add "Biscuits" to the existing players data.
+
+- ## Store_object:FindDatabyKey
+```lua
+local data = PlayerDataStore:FindDatabyKey(key)
+```
+Will return players data if it exists.
+
+
+- ## Store_object:Save
+
+```lua
+PlayerDataStore:Save(key, tblofIDs, isLeaving)
+```
+
+Returns *void*. Will *NOT* yield the script.
 

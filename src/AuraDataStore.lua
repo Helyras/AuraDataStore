@@ -105,6 +105,10 @@ end
 
 function DataStore:GetAsync(key, _retries)
 
+	if self._database[key] then
+		return self._database[key]
+	end
+
 	if not _retries then
 		_retries = 0
 	end
