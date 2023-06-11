@@ -1,5 +1,5 @@
 {
-  "name": "DataStoreModule",
+  "name": "AuraDataStore",
   "tree": {
       "$className": "DataModel",
       
