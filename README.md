@@ -150,6 +150,7 @@ end)
 ```
 
 Can be used for debugging to make sure everything is working as how it is supposed to be. ```info```, ```key``` and ```name``` will always exist.
+
 Important warnings will still warn even if this connection doesn't exists.
 
 - # Example Use
