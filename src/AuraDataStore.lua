@@ -177,7 +177,7 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 		end
 	end
 
-	if not tblofIDs then
+	if not tblofIDs and not forceSave then
 		tblofIDs = {}
 		warn(s_format("Table of UserIds is not provided for key: '%s', name: '%s'. For GDPR compliance please refer to documentation.", key, self._name))
 	end

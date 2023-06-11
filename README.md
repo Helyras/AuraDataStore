@@ -195,4 +195,4 @@ AuraDataStore.DataStatus:Connect(function(info, key, name, response, retries, se
 end)
 ```
 #
-***This module is still work in progress, bugs may occur. If you encounter any bugs or errors please let me know. This is not the final result and everything is up to change.***
+***This module is still work in progress, bugs may occur. It is still being tested. If you encounter any bugs or errors please let me know. This is not the final result and everything is up to change.***
