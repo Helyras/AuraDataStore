@@ -17,7 +17,7 @@ Players.PlayerAdded:Connect(function(player)
         player:Kick(reason)
         return
     end
-    PlayerDataStore:Reconcile(key)
+    PlayerDataStore:Reconcile(key) -- optional
 
     local folder = Instance.new("Folder")
     folder.Name = "leaderstats"
@@ -26,12 +26,12 @@ Players.PlayerAdded:Connect(function(player)
     cash.Name = "Cash"
     cash.Parent = folder
 
-    folder.Parent = player
-
     cash.Value = data.Cash
     cash.Changed:Connect(function()
         data.Cash = cash.Value
     end)
+
+    folder.Parent = player
 end)
 
 Players.PlayerRemoving:Connect(function(player)
