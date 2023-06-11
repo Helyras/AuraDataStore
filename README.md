@@ -84,6 +84,7 @@ game.Players.PlayerAdded:Connect(function(player)
 
     if not data then
         player:Kick(reason)
+        return
     end
 end)
 ```
