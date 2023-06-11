@@ -2,6 +2,10 @@
 local DataStoreService = game:GetService("DataStoreService")
 local RunService = game:GetService("RunService")
 
+if not RunService:IsServer() then
+	error("AuraDataStore must ran on server.")
+end
+
 --// Modules
 local Promise = require(script:WaitForChild("Promise"))
 local Signal = require(script:WaitForChild("Signal"))
@@ -18,10 +22,6 @@ local AuraDataStore = {
 
 --// Variables
 local s_format = string.format
-
-if not RunService:IsServer() then
-	error("AuraDataStore must ran on server.")
-end
 
 local Stores = {}
 
