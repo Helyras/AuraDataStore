@@ -5,9 +5,11 @@ AuraDataStore is designed to be simple and easy to use while providing more func
 # Documentation
 
 - ## Module
+
 ```lua
 local AuraDataStore = require()
 ```
+
 Requiring the module. Will throw an error if required on client.
 
 - ## Configuration
@@ -37,17 +39,56 @@ AuraDataStore.SessionLockTime = 1800 (default, 30 minutes)
 How much time data is locked if there is another session. When other session ends, this time gate will be removed. This disables the ability to load the data in different servers.
 
 - ## Debugging
+
 ```lua
 (Signal) AuraDataStore.DataStatus
 ```
+
 Returns signal object.
+
 ```lua
 AuraDataStore.DataStatus:Connect(function(info, key, name, response, retries, sessionLockCooldown)
     warn(info)
 end)
 ```
+
 Can be used for debugging to make sure everything is working as how it is supposed to be. ```info```, ```key``` and ```name``` will always exist.
 
 # Functions
 
 - ## AuraDataStore.CreateStore
+
+```lua
+local Template = {
+    Cash = 0
+}
+
+local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", Template)
+```
+
+Returns Store object. This is where data is going to be saved. First paramater is the name of the data store, second paramater is the template for the data.
+
+- ## Store_object:GetAsync
+
+```lua
+local Template = {
+    Cash = 0
+}
+
+local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", Template)
+
+game.Players.PlayerAdded:Connect(function(player)
+    local key = "Player_" .. player.UserId
+
+    local data, reason = PlayerDataStore:GetAsync(key)
+
+    if not data then
+        player:Kick(reason)
+    end
+end)
+```
+
+```key``` is the key in the data store named ```"PlayerDataStore"```. Data will be loaded and saved from this key in this data store.
+
+```Store_object:GetAsync``` returns one value only, data or reason. If data exists everything is fine, if not then data will be ```nil``` and ```reason``` will exist. Player should be kicked because this can only happen if their data is session locked. Hence their data is already loaded somewhere else and it is not loaded.
+
