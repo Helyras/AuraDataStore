@@ -14,7 +14,8 @@ AuraDataStore is designed to be simple and easy to use while providing more func
 - ## Module
 
 ```lua
-local AuraDataStore = require(game:GetService("ServerStorage"):WaitForChild("AuraDataStore")) -- Path to where your module is located
+local AuraDataStore = require(game:GetService("ServerStorage"):WaitForChild("AuraDataStore"))
+-- Path to where your module is located
 ```
 
 Requiring the module. Will throw an error if required on client.
