@@ -47,7 +47,7 @@ How much time data is locked if there is another session. When other session end
 
 # Functions
 
-- ## AuraDataStore.CreateStore
+- ## ```AuraDataStore.CreateStore```
 
 ```lua
 local Template = {
@@ -86,7 +86,7 @@ end)
 
 ```Store_object:GetAsync``` must be ran once when player has joined the server. If you want to access their data table from another scope or another script, refer to [```Store_object:FindDatabyKey```](https://github.com/Zepherria/AuraDataStore#store_objectfinddatabykey).
 
-- ## Store_object:Reconcile
+- ## ```Store_object:Reconcile```
 
 ```lua
 local key = "Player_" .. player.UserId
@@ -97,7 +97,7 @@ Returns *void*. It's purpose is to fill out missing values for the existing data
 
 Example: A player was playing your game before and only had the value "Cash". In the next update, you added "Biscuits" to the game and to the template. This function will add "Biscuits" to the existing players data.
 
-- ## Store_object:FindDatabyKey
+- ## ```Store_object:FindDatabyKey```
 ```lua
 local key = "Player_" .. player.UserId
 local data = PlayerDataStore:FindDatabyKey(key)
@@ -105,7 +105,7 @@ local data = PlayerDataStore:FindDatabyKey(key)
 Will return the data inside of store object associated with the key if it exists.
 
 
-- ## Store_object:Save
+- ## ```Store_object:Save```
 
 ```lua
 local key = "Player_" .. player.UserId
