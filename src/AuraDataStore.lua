@@ -41,8 +41,9 @@ local function CheckVersion(_retries)
 	if success then
 		response = HttpService:JSONDecode(response)
 		for i, v in pairs(response) do
-			if tonumber(i) > module_version then
-				warn(s_format("You are currently using"))
+			i = tonumber(i)
+			if i > module_version then
+				warn(s_format("You are currently using version '%s', updated version: '%s'"), response[module_version], v)
 			end
 		end
 	else
