@@ -3,12 +3,25 @@
 AuraDataStore is designed to be simple and easy to use while providing more functionality.
 
 # Contents
-
+- [Installation](https://github.com/Zepherria/AuraDataStore#installation)
 - [Documentation](https://github.com/Zepherria/AuraDataStore#documentation)
 - [Functions](https://github.com/Zepherria/AuraDataStore#functions)
 - [Debugging](https://github.com/Zepherria/AuraDataStore#debugging)
 - [Example Use](https://github.com/Zepherria/AuraDataStore#example-use)
-- [Roblox Model](https://www.roblox.com/library/13727205776/AuraDataStore)
+
+# Installation
+
+- ## Method 1
+
+Grab the [Roblox Model](https://www.roblox.com/library/13727205776/AuraDataStore) and insert it to your game via toolbox.
+
+- ## Method 2
+
+```lua
+game:GetService("InsertService"):LoadAsset(13727205776).AuraDataStore.Parent = game:GetService("ServerStorage")
+```
+
+Paste this command into the command bar to insert it into your game.
 
 # Documentation
 
