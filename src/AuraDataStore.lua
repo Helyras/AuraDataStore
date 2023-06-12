@@ -37,12 +37,13 @@ local function CheckVersion(_retries)
 	end
 	
 	local HttpService = game:GetService("HttpService")
-	local success, response = pcall(HttpService, HttpService.GetAsync, "https://raw.githubusercontent.com/Zepherria/AuraDataStore/master/version.json")
+	local success, response = pcall(HttpService.GetAsync, HttpService, "https://raw.githubusercontent.com/Zepherria/AuraDataStore/master/version.json")
 	if success then
 		response = HttpService:JSONDecode(response)
-		local updated_version = response.Version
-		if updated_version > module_version then
-			warn("There")
+		for i, v in pairs(response) do
+			if tonumber(i) > module_version then
+				warn(s_format("You are currently using"))
+			end
 		end
 	else
 		if _retries > 2 then
@@ -53,6 +54,8 @@ local function CheckVersion(_retries)
 		end
 	end
 end
+
+CheckVersion()
 
 local function CheckTableEquality(t1, t2)
 	if type(t1) == "table" and type(t2) == "table" then
