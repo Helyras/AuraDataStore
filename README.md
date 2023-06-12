@@ -122,7 +122,7 @@ PlayerDataStore:Save(key, tblofIDs, isLeaving)
 
 Returns *void*. Will *NOT* yield the script.
 
-For general saving, it **must** be used as:
+For general saving, it ***must*** be used as:
 
 ```lua
 local key = "Player_" .. player.UserId
@@ -130,7 +130,7 @@ local tblofIDs = {player.UserId}
 PlayerDataStore:Save(key, tblofIDs)
 ```
 
-When used inside the ```PlayerRemoving``` it must be used as:
+When used inside the ```PlayerRemoving``` it ***must*** be used as:
 
 ```lua
 local key = "Player_" .. player.UserId
