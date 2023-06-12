@@ -43,7 +43,7 @@ local function CheckVersion(_retries)
 		for i, v in pairs(response) do
 			i = tonumber(i)
 			if i > module_version then
-				warn(s_format("You are currently using version '%s', updated version: '%s'"), response[module_version], v)
+				warn(s_format("You are currently using version '%s', there is a new '%s' version that does", response[tostring(module_version)], v))
 			end
 		end
 	else
