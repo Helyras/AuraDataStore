@@ -8,7 +8,6 @@ AuraDataStore is designed to be simple and easy to use while providing more func
 - [Functions](https://github.com/Zepherria/AuraDataStore#functions)
 - [Debugging](https://github.com/Zepherria/AuraDataStore#debugging)
 - [Example Use](https://github.com/Zepherria/AuraDataStore#example-use)
-
 - [Roblox Model](https://www.roblox.com/library/13727205776/AuraDataStore)
 
 # Documentation
