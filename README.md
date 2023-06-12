@@ -65,7 +65,7 @@ local Template = {
 local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", Template)
 ```
 
-Returns Store object. This is where data is going to be saved. First paramater is the name of the data store, second paramater is the template for the data.
+Returns ```Store_object```. This is where data is going to be saved. First paramater is the name of the data store, second paramater is the template for the data.
 
 - ## ```Store_object:GetAsync```
 
