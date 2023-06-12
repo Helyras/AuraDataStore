@@ -1,6 +1,13 @@
+local VERSION = 1
+
 --// Services
 local DataStoreService = game:GetService("DataStoreService")
 local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+
+if HttpService.HttpEnabled then
+	HttpService:RequestAsync()
+end
 
 if not RunService:IsServer() then
 	error("AuraDataStore must ran on server.")
