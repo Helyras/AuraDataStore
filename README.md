@@ -110,7 +110,7 @@ Example: A player was playing your game before and only had the value "Cash". In
 local key = "Player_" .. player.UserId
 local data = PlayerDataStore:FindDatabyKey(key)
 ```
-Will return the data inside of store object associated with the key if it exists.
+Will return the ```data``` inside of ```Store_object``` associated with the key if it exists.
 
 
 - ## ```Store_object:Save```
@@ -122,7 +122,7 @@ PlayerDataStore:Save(key, tblofIDs, isLeaving)
 
 Returns *void*. Will *NOT* yield the script.
 
-For general saving, it must be used as:
+For general saving, it **must** be used as:
 
 ```lua
 local key = "Player_" .. player.UserId
