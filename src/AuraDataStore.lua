@@ -1,13 +1,8 @@
-local VERSION = 1
+local module_version = 1
 
 --// Services
 local DataStoreService = game:GetService("DataStoreService")
 local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
-
-if HttpService.HttpEnabled then
-	HttpService:RequestAsync()
-end
 
 if not RunService:IsServer() then
 	error("AuraDataStore must ran on server.")
@@ -36,6 +31,29 @@ local DataStore = {}
 DataStore.__index = DataStore
 
 --// Local Functions
+local function CheckVersion(_retries)
+	if not _retries then
+		_retries = 1
+	end
+	
+	local HttpService = game:GetService("HttpService")
+	local success, response = pcall(HttpService, HttpService.GetAsync, "https://raw.githubusercontent.com/Zepherria/AuraDataStore/master/version.json")
+	if success then
+		response = HttpService:JSONDecode(response)
+		local updated_version = response.Version
+		if updated_version > module_version then
+			warn("There")
+		end
+	else
+		if _retries > 2 then
+			warn(s_format("Http request has failed while checking version. Reason: %s", response))
+			return
+		else
+			CheckVersion(_retries + 1)
+		end
+	end
+end
+
 local function CheckTableEquality(t1, t2)
 	if type(t1) == "table" and type(t2) == "table" then
 		local function subset(a, b)
