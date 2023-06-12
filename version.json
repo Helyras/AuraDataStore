@@ -1,4 +1,5 @@
 {
-    "1": {"Version": "1.0.0", "Desc": ""},
-    "2": {"Version": "1.0.1", "Desc": "cool update"}
+    "1": {"Version": "1.0.0", "Desc": "Release version"},
+    "2": {"Version": "1.0.1", "Desc": "Release version"},
+    "3": {"Version": "1.0.2", "Desc": "Release version"}
 }

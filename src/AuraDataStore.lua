@@ -1,3 +1,4 @@
+--// Version
 local module_version = 1
 
 --// Services
@@ -13,12 +14,13 @@ local Promise = require(script:WaitForChild("Promise"))
 local Signal = require(script:WaitForChild("Signal"))
 
 local AuraDataStore = {
-	--// Settings
+	--// Configuration
 	SaveInStudio = false,
 	BindToCloseEnabled = true,
 	RetryCount = 5,
 	SessionLockTime = 1800,
-	--// Events
+	CheckForUpdate = true,
+	--// Signals
 	DataStatus = Signal.new(),
 }
 
@@ -32,31 +34,41 @@ DataStore.__index = DataStore
 
 --// Local Functions
 local function CheckVersion(_retries)
-	if not _retries then
-		_retries = 1
-	end
-	
-	local HttpService = game:GetService("HttpService")
-	local success, response = pcall(HttpService.GetAsync, HttpService, "https://raw.githubusercontent.com/Zepherria/AuraDataStore/master/version.json")
-	if success then
-		response = HttpService:JSONDecode(response)
-		for i, v in pairs(response) do
-			i = tonumber(i)
-			if i > module_version then
-				warn(s_format("You are currently using version '%s', there is a new '%s' version that does", response[tostring(module_version)], v))
+	Promise.new(function(resolve, reject)
+		if not _retries then
+			_retries = 1
+		end
+		local HttpService = game:GetService("HttpService")
+		local success, response = pcall(HttpService.GetAsync, HttpService, "https://raw.githubusercontent.com/Zepherria/AuraDataStore/master/version.json")
+		if success then
+			response = HttpService:JSONDecode(response)
+			local highest_version
+			for i, _ in pairs(response) do
+				i = tonumber(i)
+				if highest_version then
+					if i > highest_version then
+						highest_version = i
+					end
+				else
+					highest_version = i
+				end
+			end
+			if highest_version > module_version then
+				resolve(s_format("You are currently using version '%s', there is a new '%s' version with changelog below.\n%s", response[tostring(module_version)].Version, response[tostring(highest_version)].Version, response[tostring(highest_version)].Desc))
+			end
+		else
+			if _retries > 2 then
+				reject(s_format("Http request has failed while checking version. Reason: %s", response))
+				return
+			else
+				CheckVersion(_retries + 1)
 			end
 		end
-	else
-		if _retries > 2 then
-			warn(s_format("Http request has failed while checking version. Reason: %s", response))
-			return
-		else
-			CheckVersion(_retries + 1)
-		end
-	end
+	end)
+	:andThen(function(response)
+		warn(response)
+	end)
 end
-
-CheckVersion()
 
 local function CheckTableEquality(t1, t2)
 	if type(t1) == "table" and type(t2) == "table" then
@@ -107,6 +119,11 @@ local function Reconcile(tbl, template)
 			end
 		end
 	end
+end
+
+--// Checking for Updates
+if AuraDataStore.CheckForUpdate then
+	CheckVersion()
 end
 
 --// Data Store Functions

@@ -46,6 +46,12 @@ AuraDataStore.SessionLockTime = 1800 -- (default, 30 minutes)
 
 How much time data is locked if there is another session. When other session ends, this time gate will be removed. This disables the ability to load the data in different servers.
 
+```lua
+AuraDataStore.CheckForUpdate = true -- (default, highly recommended)
+```
+
+Will check for new updates on the github page. It is highly recommended to be aware of new updates and update the module.
+
 # Functions
 
 - ## ```AuraDataStore.CreateStore```
