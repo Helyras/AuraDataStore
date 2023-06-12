@@ -18,7 +18,8 @@ Grab the [Roblox Model](https://www.roblox.com/library/13727205776/AuraDataStore
 - ## Method 2
 
 ```lua
-game:GetService("InsertService"):LoadAsset(13727205776).AuraDataStore.Parent = game:GetService("ServerStorage")
+local model = game:GetService("InsertService"):LoadAsset(13727205776)
+model.AuraDataStore.Parent = game:GetService("ServerStorage")
 ```
 
 Paste this command into the command bar to insert it into your game.
