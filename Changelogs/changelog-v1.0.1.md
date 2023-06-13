@@ -1,6 +1,6 @@
 # v1.0.1
 
-- ## Changes to Saving
+- # Changes to Saving
 
 Saving is easier to use and understand now. It has been separated to 3 functions:
 
@@ -22,7 +22,7 @@ Intended for saving when the player leaves, will ***not*** respect to ```CancelS
 
 Must be only used inside the ```PlayerRemoving``` and not anywhere else.
 
-- ## ```CancelSaveIfSaved``` & ```CancelSaveIfSavedInterval```
+- # ```CancelSaveIfSaved``` & ```CancelSaveIfSavedInterval```
 
 ```lua
 AuraDataStore.CancelSaveIfSaved = true -- (default)
