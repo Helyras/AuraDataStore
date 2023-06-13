@@ -172,6 +172,8 @@ PlayerDataStore:SaveOnLeave(key, tblofIDs)
 
 ***Must*** be used when the player leaves, aka ```PlayerRemoving```. Will ***not*** respect to ```CancelSaveIfSaved```.
 
+```tblofIDs``` is *not* necessary (for now) and can be blank (```nil```). It is advised to be used for GDPR compliance.
+
 - ## ```Store_object:GetLatestAction```
 
 ```lua
