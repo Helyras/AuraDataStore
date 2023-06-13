@@ -137,7 +137,7 @@ Will return the ```data``` inside of ```Store_object``` associated with the ```k
 
 - ## ```Store_object:Save```
 
-***None of the saving functions will yield your code and they return void.***
+***Will NOT yield your code and returns void.***
 
 ```lua
 local key = "Player_" .. player.UserId
@@ -150,6 +150,8 @@ Should be used for general saving, will respect to ```CancelSaveIfSaved```.
 
 - ## ```Store_object:ForceSave```
 
+***Will NOT yield your code and returns void.***
+
 ```lua
 local key = "Player_" .. player.UserId
 PlayerDataStore:ForceSave(key, tblofIDs)
@@ -160,6 +162,8 @@ Should be used for saving when it is necessary, will ***not*** respect to ```Can
 ```tblofIDs``` is *not* necessary (for now) and can be blank (```nil```). It is advised to be used for GDPR compliance.
 
 - ## ```Store_object:SaveOnLeave```
+
+***Will NOT yield your code and returns void.***
 
 ```lua
 local key = "Player_" .. player.UserId
