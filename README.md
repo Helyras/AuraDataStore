@@ -128,10 +128,12 @@ Returns *void*. It's purpose is to fill out missing values for the existing data
 Example: A player was playing your game before and only had the value "Cash". In the next update, you added "Biscuits" to the game and to the template. This function will add "Biscuits" to the existing players data.
 
 - ## ```Store_object:FindDatabyKey```
+
 ```lua
 local key = "Player_" .. player.UserId
 local data = PlayerDataStore:FindDatabyKey(key)
 ```
+
 Will return the ```data``` inside of ```Store_object``` associated with the ```key``` if it exists.
 
 
