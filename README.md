@@ -67,6 +67,14 @@ AuraDataStore.CheckForUpdate = true -- (default, highly recommended)
 
 Will check for new updates on the github page. It is highly recommended to be aware of new updates and update the module.
 
+```lua
+AuraDataStore.CancelSaveIfSaved = true -- (default)
+AuraDataStore.CancelSaveIfSavedInterval = 60 -- (default)
+```
+
+If data is saved in the last ```60``` seconds ```:Save()``` method will fail with a warning telling how much seconds left for data to be eligible to be saved by ```:Save()```.
+```ForceSave()``` will ***not*** respect and save with resetting the interval.
+
 # Functions
 
 - ## ```AuraDataStore.CreateStore```
@@ -129,32 +137,58 @@ Will return the ```data``` inside of ```Store_object``` associated with the ```k
 
 - ## ```Store_object:Save```
 
-```lua
-local key = "Player_" .. player.UserId
-PlayerDataStore:Save(key, tblofIDs, isLeaving)
-```
-
-Returns *void*. Will *NOT* yield the script.
-
-For general saving, it ***must*** be used as:
+***None of the saving functions will yield your code and they return void.***
 
 ```lua
 local key = "Player_" .. player.UserId
-local tblofIDs = {player.UserId}
 PlayerDataStore:Save(key, tblofIDs)
 ```
 
-When used inside the ```PlayerRemoving``` it ***must*** be used as:
+Should be used for general saving, will respect to ```CancelSaveIfSaved```.
+
+```tblofIDs``` is *not* necessary (for now) and can be blank (```nil```). It is advised to be used for GDPR compliance.
+
+- ## ```Store_object:ForceSave```
 
 ```lua
 local key = "Player_" .. player.UserId
-local tblofIDs = {player.UserId}
-PlayerDataStore:Save(key, tblofIDs, true)
+PlayerDataStore:ForceSave(key, tblofIDs)
 ```
 
-Third paramater is necessary when player leaves as it indicates that. It will unlock the session for it to be load later on.
+Should be used for saving when it is necessary, will ***not*** respect to ```CancelSaveIfSaved```.
 
 ```tblofIDs``` is *not* necessary (for now) and can be blank (```nil```). It is advised to be used for GDPR compliance.
+
+- ## ```Store_object:SaveOnLeave```
+
+```lua
+local key = "Player_" .. player.UserId
+PlayerDataStore:SaveOnLeave(key, tblofIDs)
+```
+
+***Must*** be used when the player leaves, aka ```PlayerRemoving```. Will ***not*** respect to ```CancelSaveIfSaved```.
+
+- ## ```Store_object:GetLatestAction```
+
+```lua
+local key = "Player_" .. player.UserId
+local latestAction = PlayerDataStore:GetLatestAction(key)
+
+print(latestAction)
+
+--[[
+    {
+        response = ..., :string
+        status = ..., :string
+        ok = ..., :boolean
+        time = ... :number
+    }
+--]]
+```
+
+Will return information about the last action made. Return type is dictionary ```table```. Includes ```response```, ```status```, ```ok``` and ```time```.
+
+
 
 - # Debugging
 

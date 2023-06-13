@@ -1,5 +1,5 @@
 --// Version
-local module_version = 1
+local module_version = 2
 
 --// Services
 local DataStoreService = game:GetService("DataStoreService")
@@ -20,6 +20,8 @@ local AuraDataStore = {
 	RetryCount = 5,
 	SessionLockTime = 1800,
 	CheckForUpdate = true,
+	CancelSaveIfSaved = true,
+	CancelSaveIfSavedInterval = 60,
 	--// Signals
 	DataStatus = Signal.new(),
 }
@@ -121,6 +123,16 @@ local function Reconcile(tbl, template)
 	end
 end
 
+local function updateLastAction(main_tbl, key, response, status, ok, time)
+	if not main_tbl[key] then
+		main_tbl[key] = {}
+	end
+	main_tbl[key].response = response
+	main_tbl[key].status = status
+	main_tbl[key].ok = ok
+	main_tbl[key].time = time
+end
+
 --// Checking for Updates
 if AuraDataStore.CheckForUpdate then
 	CheckVersion()
@@ -133,6 +145,7 @@ AuraDataStore.CreateStore = function(name, template)
 		_template = deepCopy(template),
 		_database = {},
 		_cache = {},
+		_lastAction = {},
 		_name = name
 	}, DataStore)
 	table.insert(Stores, store)
@@ -149,53 +162,7 @@ function DataStore:FindDatabyKey(key)
 	return self._database[key]
 end
 
-function DataStore:GetAsync(key, _retries)
-
-	if self._database[key] then
-		return self._database[key]
-	end
-
-	if not _retries then
-		_retries = 0
-	end
-
-	local success, response, keyInfo = pcall(self._store.GetAsync, self._store, key)
-	if success then
-		if response then
-			if keyInfo:GetMetadata().SessionLock then
-				local secondsPassed = os.time() - keyInfo:GetMetadata().SessionLock
-				if secondsPassed < AuraDataStore.SessionLockTime then
-					AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', after %s retries. Reason: Data is session locked, try again in %d seconds. (%s~ minutes)", key, self._name, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed, math.floor((AuraDataStore.SessionLockTime - secondsPassed)/60)), key, self._name, nil, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed)
-					return nil, s_format("Data is session locked, try again in %d seconds. (%s~ minutes)", AuraDataStore.SessionLockTime - secondsPassed, math.floor((AuraDataStore.SessionLockTime - secondsPassed)/60))
-				end
-			end
-			self._database[key] = response
-			self._cache[key] = deepCopy(response)
-		else
-			self._database[key] = deepCopy(self._template)
-			self._cache[key] = deepCopy(self._template)
-		end
-
-		AuraDataStore.DataStatus:Fire(s_format("Loading data succeed for key: '%s', name: '%s', after %s retries.", key, self._name, _retries + 1), key, self._name, nil, _retries + 1)
-		self:Save(key, nil, nil, true)
-		return self._database[key]
-	else
-		_retries += 1
-		if _retries < AuraDataStore.RetryCount then
-			AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', retrying. Retries: %s", key, self._name, _retries), key, self._name, nil, _retries)
-			return self:GetAsync(key, _retries)
-		else
-			AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s' after %s retries. Reason:\n%s", key, self._name, _retries, response), key, self._name, response, _retries)
-			self._database[key] = deepCopy(self._template)
-			self._cache[key] = deepCopy(self._template)
-			self._database[key]["DontSave"] = response
-			self._cache[key]["DontSave"] = response
-			return self._database[key]
-		end
-	end
-end
-
-function DataStore:Save(key, tblofIDs, isLeaving, forceSave, _isAutoSave)
+local function Save(self, key, tblofIDs, isLeaving, forceSave, _isAutoSave)
 
 	if not AuraDataStore.SaveInStudio and RunService:IsStudio() then
 		if not forceSave then
@@ -204,15 +171,24 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave, _isAutoSave)
 		return
 	end
 
+	if AuraDataStore.CancelSaveIfSaved and not isLeaving and not forceSave then
+		local lastAction = self._lastAction[key]
+		if lastAction and lastAction.status == "SaveSuccess" or lastAction.status == "AutoSaveSuccess" then
+			local secondsPassed = os.time() - lastAction.time
+			if secondsPassed < AuraDataStore.CancelSaveIfSavedInterval then
+				warn(s_format("Did not saved data for key: '%s', name: '%s'. Reason: Data will be eligible to be saved in %d seconds.", key, self._name, AuraDataStore.CancelSaveIfSavedInterval - secondsPassed))
+				return
+			end
+		end
+	end
+
 	if not self._database[key] then
 		AuraDataStore.DataStatus:Fire(s_format("Saving data failed for key: '%s', name: '%s'. Reason: Data was session locked and did not loaded.", key, self._name), key, self._name)
 		return
 	end
 
 	if self._database[key]["DontSave"] then
-		if not forceSave then
-			warn(s_format("Saving data failed for key: '%s', name: '%s'. Reason:\n%s", key, self._name, self._database[key]["DontSave"]))
-		end
+		warn(s_format("Saving data failed for key: '%s', name: '%s'. Reason:\n%s", key, self._name, self._database[key]["DontSave"]))
 		return
 	end
 
@@ -243,50 +219,130 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave, _isAutoSave)
 		else
 			reject(response)
 			if _isAutoSave then
+
+				updateLastAction(self._lastAction, key, "Auto-save has failed.", "AutoSaveFail", false, os.time())
 				AuraDataStore.DataStatus:Fire(s_format("Auto-save failed for key: '%s', name: '%s'.", key, self._name), key, self._name)
 			else
+				updateLastAction(self._lastAction, key, response, "SaveFail", false, os.time())
 				AuraDataStore.DataStatus:Fire(s_format("Saving data failed for key: '%s', name: '%s'. Reason:\n%s", key, self._name, response), key, self._name, response)
 			end
 			self:Save(key, tblofIDs)
 		end
 	end)
 	:andThen(function()
-		if not forceSave then
+		if os.time() - self._lastAction[key].time > 5 then
+			updateLastAction(self._lastAction, key, "Saving data succeed.", "SaveSuccess", true, os.time())
 			AuraDataStore.DataStatus:Fire(s_format("Saving data succeed for key: '%s', name: '%s'.", key, self._name), key, self._name)
 		end
 		if _isAutoSave then
+			updateLastAction(self._lastAction, key, "Auto-saving data succeed.", "AutoSaveSuccess", true, os.time())
 			AuraDataStore.DataStatus:Fire(s_format("Auto-save succeed for key: '%s', name: '%s'.", key, self._name), key, self._name)
 		end
 		if isLeaving then
 			self._database[key] = nil
 			self._cache[key] = nil
+			self._lastAction[key] = nil
 		else
 			self._cache[key] = deepCopy(self._database[key])
 		end
 	end)
 end
 
-local function BindToClose()
+function DataStore:GetAsync(key, _retries)
+
+	if self._database[key] then
+		return self._database[key]
+	end
+
+	if not _retries then
+		_retries = 0
+	end
+
+	local success, response, keyInfo = pcall(self._store.GetAsync, self._store, key)
+
+	if success then
+		if response then
+
+			if keyInfo:GetMetadata().SessionLock then
+				local secondsPassed = os.time() - keyInfo:GetMetadata().SessionLock
+				if secondsPassed < AuraDataStore.SessionLockTime then
+					AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', after %s retries. Reason: Data is session locked, try again in %d seconds. (%s~ minutes)", key, self._name, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed, math.floor((AuraDataStore.SessionLockTime - secondsPassed)/60)), key, self._name, nil, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed)
+					return nil, s_format("Data is session locked, try again in %d seconds. (%s~ minutes)", AuraDataStore.SessionLockTime - secondsPassed, math.floor((AuraDataStore.SessionLockTime - secondsPassed)/60))
+				end
+			end
+
+			self._database[key] = response
+			self._cache[key] = deepCopy(response)
+
+			updateLastAction(self._lastAction, key, "Data has been loaded successfully.", "LoadSuccess", true, os.time())
+		else
+			self._database[key] = deepCopy(self._template)
+			self._cache[key] = deepCopy(self._template)
+
+			updateLastAction(self._lastAction, key, "Default data has been loaded.", "NewData", true, os.time())
+		end
+
+		AuraDataStore.DataStatus:Fire(s_format("Loading data succeed for key: '%s', name: '%s', after %s retries.", key, self._name, _retries + 1), key, self._name, nil, _retries + 1)
+		Save(self, key, nil, nil, true)
+		return self._database[key]
+	else
+		_retries += 1
+		if _retries < AuraDataStore.RetryCount then
+			AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', retrying. Retries: %s", key, self._name, _retries), key, self._name, nil, _retries)
+			return self:GetAsync(key, _retries)
+		else
+			updateLastAction(self._lastAction, key, response, "LoadFail", false, os.time())
+
+			self._database[key] = deepCopy(self._template)
+			self._cache[key] = deepCopy(self._template)
+			self._database[key]["DontSave"] = response
+			self._cache[key]["DontSave"] = response
+
+			AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s' after %s retries. Reason:\n%s", key, self._name, _retries, response), key, self._name, response, _retries)
+			
+			return self._database[key]
+		end
+	end
+end
+
+function DataStore:Save(key, tblofIDs)
+	Save(self, key, tblofIDs)
+end
+
+function DataStore:ForceSave(key, tblofIDs)
+	Save(self, key, tblofIDs, nil, true)
+end
+
+function DataStore:SaveOnLeave(key, tblofIDs)
+	Save(self, key, tblofIDs, true)
+end
+
+function DataStore:GetLatestAction(key)
+	return deepCopy(self._lastAction[key])
+end
+
+game:BindToClose(function()
 	if AuraDataStore.BindToCloseEnabled and not RunService:IsStudio() then
 		for _, self in pairs(Stores) do
 			for i, _ in pairs(self._database) do
-				self:Save(i, nil, true)
+				Save(self, i, nil, true)
 			end
 		end
 		task.wait(20)
 	end
-end
+end)
 
 --// Auto-saving for session locking
 coroutine.wrap(function()
-	while task.wait(AuraDataStore.SessionLockTime / 2) do
+	while task.wait(AuraDataStore.SessionLockTime / 3) do
+		AuraDataStore.DataStatus:Fire("Starting auto-save..")
 		for _, self in pairs(Stores) do
 			for i, _ in pairs(self._database) do
-				self:Save(i, nil, nil, true, true)
+				Save(self, i, nil, nil, nil, true)
 			end
 		end
+		AuraDataStore.DataStatus:Fire("Finished auto-save.")
 	end
 end)()
 
-game:BindToClose(BindToClose)
 return AuraDataStore

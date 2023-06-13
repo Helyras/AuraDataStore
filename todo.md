@@ -1,1 +1,0 @@
-Save function will be queueing if there is no budget or data is saved in the last 60 seconds.

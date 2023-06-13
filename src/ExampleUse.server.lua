@@ -18,7 +18,7 @@ Players.PlayerAdded:Connect(function(player)
 		player:Kick(reason)
 		return
 	end
-	
+
 	PlayerDataStore:Reconcile(key) -- optional
 
 	local folder = Instance.new("Folder")
@@ -38,7 +38,7 @@ end)
 
 Players.PlayerRemoving:Connect(function(player)
 	local key = player.UserId
-	PlayerDataStore:Save(key, {key}, true)
+	PlayerDataStore:SaveOnLeave(key, {key})
 end)
 
 AuraDataStore.DataStatus:Connect(function(info, key, name, response, retries, sessionLockCooldown)

@@ -1,3 +1,4 @@
 {
-    "1": {"Version": "1.0.0", "Desc": "Release version"}
+    "1": {"Version": "1.0.0", "Desc": "Release version"},
+    "2": {"Version": "1.0.1", "Desc": ":Save() had some changes. There is now 3 seperate functions for saving. :Save(), :ForceSave(), :SaveOnLeave(). For more information please check documentation."}
 }
