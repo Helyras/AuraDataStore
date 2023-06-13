@@ -34,7 +34,6 @@ DataStore.__index = DataStore
 
 --// Local Functions
 local function CheckVersion(_retries)
-	
 	Promise.new(function(resolve, reject)
 		if not _retries then
 			_retries = 1
