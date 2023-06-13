@@ -270,5 +270,16 @@ local function BindToClose()
 	end
 end
 
+--// Auto-saving for session locking
+coroutine.wrap(function()
+	while task.wait(AuraDataStore.SessionLockTime / 2) do
+		for _, self in pairs(Stores) do
+			for i, _ in pairs(self._database) do
+				self:Save(i)
+			end
+		end
+	end
+end)()
+
 game:BindToClose(BindToClose)
 return AuraDataStore
