@@ -195,7 +195,7 @@ function DataStore:GetAsync(key, _retries)
 	end
 end
 
-function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
+function DataStore:Save(key, tblofIDs, isLeaving, forceSave, _isAutoSave)
 
 	if not AuraDataStore.SaveInStudio and RunService:IsStudio() then
 		if not forceSave then
@@ -242,13 +242,20 @@ function DataStore:Save(key, tblofIDs, isLeaving, forceSave)
 			resolve(response)
 		else
 			reject(response)
-			AuraDataStore.DataStatus:Fire(s_format("Saving data failed for key: '%s', name: '%s'. Reason:\n%s", key, self._name, response), key, self._name, response)
+			if _isAutoSave then
+				AuraDataStore.DataStatus:Fire(s_format("Auto-save failed for key: '%s', name: '%s'.", key, self._name), key, self._name)
+			else
+				AuraDataStore.DataStatus:Fire(s_format("Saving data failed for key: '%s', name: '%s'. Reason:\n%s", key, self._name, response), key, self._name, response)
+			end
 			self:Save(key, tblofIDs)
 		end
 	end)
 	:andThen(function()
-		if not forceSave or (isLeaving and forceSave) then
+		if not forceSave then
 			AuraDataStore.DataStatus:Fire(s_format("Saving data succeed for key: '%s', name: '%s'.", key, self._name), key, self._name)
+		end
+		if _isAutoSave then
+			AuraDataStore.DataStatus:Fire(s_format("Auto-save succeed for key: '%s', name: '%s'.", key, self._name), key, self._name)
 		end
 		if isLeaving then
 			self._database[key] = nil
@@ -275,7 +282,7 @@ coroutine.wrap(function()
 	while task.wait(AuraDataStore.SessionLockTime / 2) do
 		for _, self in pairs(Stores) do
 			for i, _ in pairs(self._database) do
-				self:Save(i)
+				self:Save(i, nil, nil, true, true)
 			end
 		end
 	end

@@ -13,10 +13,12 @@ local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", AuraTemplat
 Players.PlayerAdded:Connect(function(player)
 	local key = player.UserId
 	local data, reason = PlayerDataStore:GetAsync(key)
+
 	if not data then
 		player:Kick(reason)
 		return
 	end
+	
 	PlayerDataStore:Reconcile(key) -- optional
 
 	local folder = Instance.new("Folder")
