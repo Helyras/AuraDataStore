@@ -196,7 +196,7 @@ Will return information about the last action made. Return type is dictionary ``
 
 
 
-- # Debugging
+# Debugging
 
 ```lua
 (Signal) AuraDataStore.DataStatus
@@ -214,7 +214,7 @@ Can be used for debugging to make sure everything is working as how it is suppos
 
 Important warnings will still warn even if this connection doesn't exists.
 
-- # Example Use
+# Example Use
 
 ```lua
 local ServerStorage = game:GetService("ServerStorage")
