@@ -6,17 +6,17 @@ Saving is easier to use and understand now. It has been separated to 3 functions
 
 ```Store_object:Save()```, ```Store_object:ForceSave()``` and ```Store_object:SaveOnLeave()```.
 
-- ## ```Store_object:Save()```
+- ## ```Store_object:Save(key, tblofIDs)```
 
 Intended for general saving, will respect to ```CancelSaveIfSaved```.
 
-- ## ```Store_object:ForceSave()```
+- ## ```Store_object:ForceSave(key, tblofIDs)```
 
 Intended for saving when it is ***necessary***, will ***not*** respect to ```CancelSaveIfSaved```.
 
 Use cases can be when a player makes a purchase or reaches to a milestone. 
 
-- ## ```Store_object:SaveOnLeave()```
+- ## ```Store_object:SaveOnLeave(key, tblofIDs)```
 
 Intended for saving when the player leaves, will ***not*** respect to ```CancelSaveIfSaved```.
 
