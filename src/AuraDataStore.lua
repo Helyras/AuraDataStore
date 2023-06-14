@@ -1,5 +1,5 @@
 --// Version
-local module_version = 2
+local module_version = 3
 
 --// Services
 local DataStoreService = game:GetService("DataStoreService")
@@ -224,14 +224,15 @@ local function Save(self: store_object_type, key: string, tblofIDs: {}, isLeavin
 		end
 	end)
 	:andThen(function()
-		if os.time() - Stores[self]._lastAction[key].time > 5 then
-			updateLastAction(Stores[self]._lastAction, key, "Saving data succeed.", "SaveSuccess", true, os.time())
-			AuraDataStore.DataStatus:Fire(s_format("Saving data succeed for key: '%s', name: '%s'.", key, Stores[self]._name), key, Stores[self]._name)
-		end
-		if _isAutoSave then
+
+		if (forceSave and _isAutoSave) or _isAutoSave then
 			updateLastAction(Stores[self]._lastAction, key, "Auto-saving data succeed.", "AutoSaveSuccess", true, os.time())
 			AuraDataStore.DataStatus:Fire(s_format("Auto-save succeed for key: '%s', name: '%s'.", key, Stores[self]._name), key, Stores[self]._name)
+		elseif not forceSave then
+			updateLastAction(Stores[self]._lastAction, key, "Saving data succeed.", "SaveSuccess", true, os.time())
+		  AuraDataStore.DataStatus:Fire(s_format("Saving data succeed for key: '%s', name: '%s'.", key, Stores[self]._name), key, Stores[self]._name)
 		end
+		
 		if isLeaving then
 			Stores[self]._database[key] = nil
 			Stores[self]._cache[key] = nil
@@ -348,7 +349,7 @@ coroutine.wrap(function()
 		AuraDataStore.DataStatus:Fire("Starting auto-save..")
 		for self, value in pairs(Stores) do
 			for i, _ in pairs(value._database) do
-				Save(self, i, nil, nil, nil, true)
+				Save(self, i, nil, nil, true, true)
 			end
 		end
 		AuraDataStore.DataStatus:Fire("Finished auto-save.")

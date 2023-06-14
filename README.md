@@ -225,11 +225,11 @@ local Players = game:GetService("Players")
 local AuraDataStore = require(ServerStorage:WaitForChild("AuraDataStore"))
 AuraDataStore.SaveInStudio = true
 
-local AuraTemplate = {
+local DataTemplate = {
 	Cash = 0
 }
 
-local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", AuraTemplate)
+local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", DataTemplate)
 
 Players.PlayerAdded:Connect(function(player)
 	local key = player.UserId
