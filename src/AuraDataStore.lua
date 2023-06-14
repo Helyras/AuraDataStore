@@ -1,5 +1,5 @@
 --// Version
-local module_version = 3
+local module_version = 2
 
 --// Services
 local DataStoreService = game:GetService("DataStoreService")
@@ -60,7 +60,7 @@ local function CheckVersion(_retries)
 				end
 			end
 			if highest_version > module_version then
-				resolve(s_format("You are currently using version '%s', there is a new '%s' version with changelog below.\nhttps://github.com/Zepherria/AuraDataStore/blob/master/Changelogs/changelog-%s.md", response[tostring(module_version)].Version, response[tostring(highest_version)].Version, response[tostring(highest_version)].Version))
+				resolve(s_format("You are currently using version '%s', there is a new '%s' version with changelog below.\nhttps://github.com/Zepherria/AuraDataStore/blob/master/changelogs/changelog-v%s.md", response[tostring(module_version)], response[tostring(highest_version)], response[tostring(highest_version)]))
 			end
 		else
 			if _retries > 2 then
