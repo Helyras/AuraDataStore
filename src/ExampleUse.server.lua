@@ -11,7 +11,6 @@ local DataTemplate = {
 local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", DataTemplate)
 
 Players.PlayerAdded:Connect(function(player)
-	
 	local key = player.UserId
 	local data, reason = PlayerDataStore:GetAsync(key)
 
