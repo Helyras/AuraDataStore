@@ -99,14 +99,14 @@ local Template = {
 local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", Template)
 
 game.Players.PlayerAdded:Connect(function(player)
-    local key = "Player_" .. player.UserId
+  local key = "Player_" .. player.UserId
 
-    local data, reason = PlayerDataStore:GetAsync(key)
+  local data, reason = PlayerDataStore:GetAsync(key)
 
-    if not data then
-        player:Kick(reason)
-        return
-    end
+  if not data then
+      player:Kick(reason)
+      return
+  end
 end)
 ```
 
@@ -208,7 +208,7 @@ Returns signal object.
 
 ```lua
 AuraDataStore.DataStatus:Connect(function(info, key, name, response, retries, sessionLockCooldown)
-    warn(info)
+  warn(info)
 end)
 ```
 
