@@ -75,6 +75,15 @@ AuraDataStore.CancelSaveIfSavedInterval = 60 -- (default)
 If data is saved in the last ```60``` seconds ```:Save()``` method will fail with a warning telling how much seconds left for data to be eligible to be saved by ```:Save()```.
 ```ForceSave()``` will ***not*** respect and save with resetting the interval.
 
+```lua
+AuraDataStore.MaxRetriesIfSessionLocked = 3 -- (default)
+AuraDataStore.YieldTimeIfSessionLocked = 5 -- (default)
+```
+
+If data is session locked, AuraDataStore will try ```3``` times while waiting ```5``` seconds each. This is intented for experiences where players are teleported to a sub experience.
+
+With current settings, when a player joins AuraDataStore will try loading their data. If it is session locked it will yield for 5 seconds with a warning message send to ```DataStatus``` signal. If this fails too then it will yield for 5 more seconds then will try for the last time. If it fails again it will return ```data``` as ```nil``` as usual and return a ```reason```.
+
 # Functions
 
 - ## ```AuraDataStore.CreateStore```
@@ -99,14 +108,14 @@ local Template = {
 local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", Template)
 
 game.Players.PlayerAdded:Connect(function(player)
-    local key = "Player_" .. player.UserId
+  local key = "Player_" .. player.UserId
 
-    local data, reason = PlayerDataStore:GetAsync(key)
+  local data, reason = PlayerDataStore:GetAsync(key)
 
-    if not data then
-        player:Kick(reason)
-        return
-    end
+  if not data then
+      player:Kick(reason)
+      return
+  end
 end)
 ```
 
@@ -196,7 +205,20 @@ print(latestAction)
 
 Will return information about the last action made. Return type is dictionary ```table```. Includes ```response```, ```status```, ```ok``` and ```time```.
 
+- ## ```store_object:Wipe```
 
+```lua
+local key = "Player_" .. player.UserId
+local ok, old_data = PlayerDataStore:Wipe(key)
+
+if ok then
+  player:Kick("Your data has been wiped >:(")
+end 
+```
+
+When called, it will replace the data for that ```key``` with the template of ```store_object```. Player ***must*** be kicked afterwards to force a save by ```store_object:SaveOnLeave```.
+
+```old_data``` will be their data before the replacement with the template. This will only exist if ```ok``` is ```true```.
 
 # Debugging
 
@@ -208,7 +230,7 @@ Returns signal object.
 
 ```lua
 AuraDataStore.DataStatus:Connect(function(info, key, name, response, retries, sessionLockCooldown)
-    warn(info)
+  warn(info)
 end)
 ```
 
@@ -226,44 +248,44 @@ local AuraDataStore = require(ServerStorage:WaitForChild("AuraDataStore"))
 AuraDataStore.SaveInStudio = true
 
 local DataTemplate = {
-	Cash = 0
+  Cash = 0
 }
 
 local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", DataTemplate)
 
 Players.PlayerAdded:Connect(function(player)
-	local key = player.UserId
-	local data, reason = PlayerDataStore:GetAsync(key)
+  local key = player.UserId
+  local data, reason = PlayerDataStore:GetAsync(key)
 
-	if not data then
-		player:Kick(reason)
-		return
-	end
+  if not data then
+    player:Kick(reason)
+    return
+  end
 
-	PlayerDataStore:Reconcile(key) -- optional
+  PlayerDataStore:Reconcile(key) -- optional
 
-	local folder = Instance.new("Folder")
-	folder.Name = "leaderstats"
+  local folder = Instance.new("Folder")
+  folder.Name = "leaderstats"
 
-	local cash = Instance.new("IntValue")
-	cash.Name = "Cash"
-	cash.Parent = folder
+  local cash = Instance.new("IntValue")
+  cash.Name = "Cash"
+  cash.Parent = folder
 
-	cash.Value = data.Cash
-	cash.Changed:Connect(function()
-		data.Cash = cash.Value
-	end)
+  cash.Value = data.Cash
+  cash.Changed:Connect(function()
+    data.Cash = cash.Value
+  end)
 
-	folder.Parent = player
+  folder.Parent = player
 end)
 
 Players.PlayerRemoving:Connect(function(player)
-	local key = player.UserId
-	PlayerDataStore:SaveOnLeave(key, {key})
+  local key = player.UserId
+  PlayerDataStore:SaveOnLeave(key, {key})
 end)
 
 AuraDataStore.DataStatus:Connect(function(info, key, name, response, retries, sessionLockCooldown)
-	warn(info)
+  warn(info)
 end)
 
 ```
