@@ -11,7 +11,7 @@ local DataTemplate = {
 local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", DataTemplate)
 
 Players.PlayerAdded:Connect(function(player)
-  local key = player.UserId
+  local key = "Player_" .. player.UserId
   local data, reason = PlayerDataStore:GetAsync(key)
 
   if not data then
@@ -37,8 +37,8 @@ Players.PlayerAdded:Connect(function(player)
 end)
 
 Players.PlayerRemoving:Connect(function(player)
-  local key = player.UserId
-  PlayerDataStore:SaveOnLeave(key, {key})
+  local key = "Player_" .. player.UserId
+  PlayerDataStore:SaveOnLeave(key, {player.UserId})
 end)
 
 AuraDataStore.DataStatus:Connect(function(info, key, name, response, retries, sessionLockCooldown)

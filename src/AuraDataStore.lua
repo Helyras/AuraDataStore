@@ -1,5 +1,5 @@
 --// Version
-local module_version = 3
+local module_version = 4
 
 --// Services
 local DataStoreService = game:GetService("DataStoreService")
@@ -14,14 +14,18 @@ local Promise = require(script:WaitForChild("Promise"))
 local Signal = require(script:WaitForChild("Signal"))
 
 local AuraDataStore = {
-  --// Configuration
+  --[[ Configuration ]]--
   SaveInStudio = false,
   BindToCloseEnabled = true,
   RetryCount = 5,
   SessionLockTime = 1800,
   CheckForUpdate = true,
+  --[[ --- ]]--
   CancelSaveIfSaved = true,
   CancelSaveIfSavedInterval = 60,
+  --[[ About Session Lock ]]--
+  MaxRetriesIfSessionLocked = 3,
+  YieldTimeIfSessionLocked = 5,
   --// Signals
   DataStatus = Signal.new(),
 }
@@ -212,14 +216,15 @@ local function Save(self: store_object_type, key: string, tblofIDs: {}, isLeavin
       resolve(response)
     else
       reject(response)
-      if _isAutoSave then
 
+      if _isAutoSave then
         updateLastAction(Stores[self]._lastAction, key, "Auto-save has failed.", "AutoSaveFail", false, os.time())
         AuraDataStore.DataStatus:Fire(s_format("Auto-save failed for key: '%s', name: '%s'.", key, Stores[self]._name), key, Stores[self]._name)
       else
         updateLastAction(Stores[self]._lastAction, key, response, "SaveFail", false, os.time())
         AuraDataStore.DataStatus:Fire(s_format("Saving data failed for key: '%s', name: '%s'. Reason:\n%s", key, Stores[self]._name, response), key, Stores[self]._name, response)
       end
+
       self:Save(key, tblofIDs)
     end
   end)
@@ -261,8 +266,15 @@ local function _GetAsync(self: store_object_type, key: string, _retries: number)
       if keyInfo:GetMetadata().SessionLock then
         local secondsPassed = os.time() - keyInfo:GetMetadata().SessionLock
         if secondsPassed < AuraDataStore.SessionLockTime then
-          AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', after %s retries. Reason: Data is session locked, try again in %d seconds. (%s~ minutes)", key, Stores[self]._name, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed, math.floor((AuraDataStore.SessionLockTime - secondsPassed)/60)), key, Stores[self]._name, nil, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed)
-          return nil, s_format("Data is session locked, try again in %d seconds. (%s~ minutes)", AuraDataStore.SessionLockTime - secondsPassed, math.floor((AuraDataStore.SessionLockTime - secondsPassed)/60))
+          if _retries + 1 >= (AuraDataStore.MaxRetriesIfSessionLocked or 3) then
+            AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', after %s retries. Reason: Data is session locked, try again in %d seconds. (%s~ minutes)", key, Stores[self]._name, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed, math.floor((AuraDataStore.SessionLockTime - secondsPassed)/60)), key, Stores[self]._name, nil, _retries + 1, AuraDataStore.SessionLockTime - secondsPassed)
+            return nil, s_format("Data is session locked, try again in %d seconds. (%s~ minutes)", AuraDataStore.SessionLockTime - secondsPassed, math.floor((AuraDataStore.SessionLockTime - secondsPassed)/60))
+          else
+            _retries += 1
+            AuraDataStore.DataStatus:Fire(s_format("Loading data failed for key: '%s', name: '%s', retries: %s. Reason: Data is session locked, retrying in %s seconds.", key, Stores[self]._name, _retries, AuraDataStore.YieldTimeIfSessionLocked or 5))
+            task.wait(AuraDataStore.YieldTimeIfSessionLocked or 5)
+            return _GetAsync(self, key, _retries)
+          end
         end
       end
 
@@ -298,6 +310,19 @@ local function _GetAsync(self: store_object_type, key: string, _retries: number)
       return Stores[self]._database[key]
     end
   end
+end
+
+local function Wipe(self: store_object_type, key: string): boolean
+  if Stores[self]._database[key] then
+    local old_data = Stores[self]._database[key]
+    Stores[self]._database[key] = deepCopy(Stores[self]._template)
+    return true, old_data
+  end
+  return false
+end
+
+function DataStore.Wipe(self: store_object_type, key: string): boolean
+  return Wipe(self, key)
 end
 
 function DataStore.Reconcile(self: store_object_type, key: string): nil
