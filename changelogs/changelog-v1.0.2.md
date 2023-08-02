@@ -6,4 +6,4 @@ Every function now has proper type checking indicating what to expect and what w
 
 - # Private Variables
 
-Every ```store_object``` had private variables. They are now hidden when ```store_object``` is indexed by the dot operator.
+Every ```AuraStore``` had private variables. They are now hidden when ```AuraStore``` is indexed by the dot operator.
