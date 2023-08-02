@@ -53,7 +53,7 @@ Enables or disables ```game:BindToClose()``` function, which is necessary for sa
 AuraDataStore.RetryCount = 5 -- (default)
 ```
 
-This is how many times module will try to load data before giving up. If data cannot be loaded for some reason it will be provided as a warning. Refer to [```store_object:GetAsync```](https://github.com/Zepherria/AuraDataStore#store_objectgetasync) for more information.
+This is how many times module will try to load data before giving up. If data cannot be loaded for some reason it will be provided as a warning. Refer to [```AuraStore:GetAsync```](https://github.com/Helyras/AuraDataStore#AuraStoregetasync) for more information.
 
 ```lua
 AuraDataStore.SessionLockTime = 1800 -- (default, 30 minutes)
@@ -96,9 +96,9 @@ local Template = {
 local PlayerDataStore = AuraDataStore.CreateStore("PlayerDataStore", Template)
 ```
 
-Returns ```store_object```. This is where data is going to be saved. First paramater is the name of the data store, second paramater is the template for the data.
+Returns ```AuraStore```. This is where data is going to be saved. First paramater is the name of the data store, second paramater is the template for the data.
 
-- ## ```store_object:GetAsync```
+- ## ```AuraStore:GetAsync```
 
 ```lua
 local Template = {
@@ -121,11 +121,11 @@ end)
 
 ```key``` is the key in the data store named ```"PlayerDataStore"```. Data will be loaded and saved from this key in this data store. Will yield the script.
 
-```store_object:GetAsync``` returns one value only, ```data``` or ```reason```. If ```data``` doesn't exist then ```reason``` will exist. Player should be kicked because this can only happen if their data is session locked. Hence their data is already loaded somewhere else and it is not loaded.
+```AuraStore:GetAsync``` returns one value only, ```data``` or ```reason```. If ```data``` doesn't exist then ```reason``` will exist. Player should be kicked because this can only happen if their data is session locked. Hence their data is already loaded somewhere else and it is not loaded.
 
-```store_object:GetAsync``` must be ran once when player has joined the server. If you want to access their data table from another scope or another script, refer to [```store_object:FindDatabyKey```](https://github.com/Zepherria/AuraDataStore#store_objectfinddatabykey).
+```AuraStore:GetAsync``` must be ran once when player has joined the server. If you want to access their data table from another scope or another script, refer to [```AuraStore:FindDatabyKey```](https://github.com/Zepherria/AuraDataStore#AuraStorefinddatabykey).
 
-- ## ```store_object:Reconcile```
+- ## ```AuraStore:Reconcile```
 
 ```lua
 local key = "Player_" .. player.UserId
@@ -136,17 +136,17 @@ Returns *void*. It's purpose is to fill out missing values for the existing data
 
 Example: A player was playing your game before and only had the value "Cash". In the next update, you added "Biscuits" to the game and to the template. This function will add "Biscuits" to the existing players data.
 
-- ## ```store_object:FindDatabyKey```
+- ## ```AuraStore:FindDatabyKey```
 
 ```lua
 local key = "Player_" .. player.UserId
 local data = PlayerDataStore:FindDatabyKey(key)
 ```
 
-Will return the ```data``` inside of ```store_object``` associated with the ```key``` if it exists.
+Will return the ```data``` inside of ```AuraStore``` associated with the ```key``` if it exists.
 
 
-- ## ```store_object:Save```
+- ## ```AuraStore:Save```
 
 ***Will NOT yield your code and returns void.***
 
@@ -159,7 +159,7 @@ Should be used for general saving, will respect to ```CancelSaveIfSaved```.
 
 ```tblofIDs``` is *not* necessary (for now) and can be blank (```nil```). It is advised to be used for GDPR compliance.
 
-- ## ```store_object:ForceSave```
+- ## ```AuraStore:ForceSave```
 
 ***Will NOT yield your code and returns void.***
 
@@ -172,7 +172,7 @@ Should be used for saving when it is necessary, will ***not*** respect to ```Can
 
 ```tblofIDs``` is *not* necessary (for now) and can be blank (```nil```). It is advised to be used for GDPR compliance.
 
-- ## ```store_object:SaveOnLeave```
+- ## ```AuraStore:SaveOnLeave```
 
 ***Will NOT yield your code and returns void.***
 
@@ -185,7 +185,7 @@ PlayerDataStore:SaveOnLeave(key, tblofIDs)
 
 ```tblofIDs``` is *not* necessary (for now) and can be blank (```nil```). It is advised to be used for GDPR compliance.
 
-- ## ```store_object:GetLatestAction```
+- ## ```AuraStore:GetLatestAction```
 
 ```lua
 local key = "Player_" .. player.UserId
@@ -205,7 +205,7 @@ print(latestAction)
 
 Will return information about the last action made. Return type is dictionary ```table```. Includes ```response```, ```status```, ```ok``` and ```time```.
 
-- ## ```store_object:Wipe```
+- ## ```AuraStore:Wipe```
 
 ```lua
 local key = "Player_" .. player.UserId
@@ -216,7 +216,7 @@ if ok then
 end 
 ```
 
-When called, it will replace the data for that ```key``` with the template of ```store_object```. Player ***must*** be kicked afterwards to force a save by ```store_object:SaveOnLeave```.
+When called, it will replace the data for that ```key``` with the template of ```AuraStore```. Player ***must*** be kicked afterwards to force a save by ```AuraStore:SaveOnLeave```.
 
 ```old_data``` will be their data before the replacement with the template. This will only exist if ```ok``` is ```true```.
 
