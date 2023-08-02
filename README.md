@@ -3,11 +3,11 @@
 AuraDataStore is designed to be simple and easy to use while providing more functionality.
 
 # Contents
-- [Installation](https://github.com/Zepherria/AuraDataStore#installation)
-- [Documentation](https://github.com/Zepherria/AuraDataStore#documentation)
-- [Functions](https://github.com/Zepherria/AuraDataStore#functions)
-- [Debugging](https://github.com/Zepherria/AuraDataStore#debugging)
-- [Example Use](https://github.com/Zepherria/AuraDataStore#example-use)
+- [Installation](https://github.com/Helyras/AuraDataStore#installation)
+- [Documentation](https://github.com/Helyras/AuraDataStore#documentation)
+- [Functions](https://github.com/Helyras/AuraDataStore#functions)
+- [Debugging](https://github.com/Helyras/AuraDataStore#debugging)
+- [Example Use](https://github.com/Helyras/AuraDataStore#example-use)
 
 # Installation
 
@@ -53,7 +53,7 @@ Enables or disables ```game:BindToClose()``` function, which is necessary for sa
 AuraDataStore.RetryCount = 5 -- (default)
 ```
 
-This is how many times module will try to load data before giving up. If data cannot be loaded for some reason it will be provided as a warning. Refer to [```AuraStore:GetAsync```](https://github.com/Helyras/AuraDataStore#AuraStoregetasync) for more information.
+This is how many times module will try to load data before giving up. If data cannot be loaded for some reason it will be provided as a warning. Refer to [```AuraStore:GetAsync```](https://github.com/Helyras/AuraDataStore#aurastoregetasync) for more information.
 
 ```lua
 AuraDataStore.SessionLockTime = 1800 -- (default, 30 minutes)
@@ -123,7 +123,7 @@ end)
 
 ```AuraStore:GetAsync``` returns one value only, ```data``` or ```reason```. If ```data``` doesn't exist then ```reason``` will exist. Player should be kicked because this can only happen if their data is session locked. Hence their data is already loaded somewhere else and it is not loaded.
 
-```AuraStore:GetAsync``` must be ran once when player has joined the server. If you want to access their data table from another scope or another script, refer to [```AuraStore:FindDatabyKey```](https://github.com/Zepherria/AuraDataStore#AuraStorefinddatabykey).
+```AuraStore:GetAsync``` must be ran once when player has joined the server. If you want to access their data table from another scope or another script, refer to [```AuraStore:FindDatabyKey```](https://github.com/Helyras/AuraDataStore#aurastorefinddatabykey).
 
 - ## ```AuraStore:Reconcile```
 
