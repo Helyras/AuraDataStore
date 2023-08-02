@@ -13,7 +13,7 @@ AuraDataStore is designed to be simple and easy to use while providing more func
 
 - ## Method 1
 
-Grab the [Roblox Model](https://www.roblox.com/library/13727205776/AuraDataStore) and insert it to your game via toolbox.
+Grab the [Roblox Model](https://www.roblox.com/library/13727205776/AuraDataStore) and insert it to your experience via toolbox.
 
 - ## Method 2
 
@@ -22,7 +22,7 @@ local model = game:GetService("InsertService"):LoadAsset(13727205776)
 model.AuraDataStore.Parent = game:GetService("ServerStorage")
 ```
 
-Paste this command into the command bar to insert it into your game.
+Paste this command into the command bar to insert it into your experience.
 
 # Documentation
 
@@ -134,7 +134,7 @@ PlayerDataStore:Reconcile(key)
 
 Returns *void*. It's purpose is to fill out missing values for the existing datas and completely optional.
 
-Example: A player was playing your game before and only had the value "Cash". In the next update, you added "Biscuits" to the game and to the template. This function will add "Biscuits" to the existing players data.
+Example: A player was playing your experience before and only had the value "Cash". In the next update, you added "Biscuits" to the experience and to the template. This function will add "Biscuits" to the existing players data.
 
 - ## ```AuraStore:FindDatabyKey```
 
